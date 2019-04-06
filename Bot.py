@@ -5,6 +5,8 @@ from Scrape import Menu
 import json
 import os
 import datetime
+from fuzzywuzzy import fuzz
+
 # Log messages to the server to get insights about user activities beside the print statements
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
@@ -51,7 +53,7 @@ def listen(bot, update):
         print("New save request")
         # search for known mensa name
         for word in MENSA:
-            if word in response:
+            if fuzz.token_set_ratio(word, response) > 95:
                 mensa = ETHmensa[word]
                 #print(mensa)
 
@@ -72,7 +74,7 @@ def listen(bot, update):
         if menu not in data[mensa]:
             data[mensa][menu]=[]
 
-        # ad chat id to that manse-menu combination
+        # add chat id to that mensa-menu combination
         data[mensa][menu].append(update.message.chat_id)
         # update last edited key of json
         data["lastUpdate"] = str(datetime.datetime.now())
