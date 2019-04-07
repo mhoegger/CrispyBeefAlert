@@ -7,8 +7,8 @@ import datetime
 class Menu():
 
     def __init__(self):
-        self.MensaDict = None
-        self.baseUrl = None
+        self.MensaDict = {}
+        self.baseUrl = {}
 
     def scrapeAll(self, date):
         dict = {}
@@ -96,37 +96,37 @@ class UZHMenu(Menu):
         self.baseUrl = "https://www.mensa.uzh.ch/de/menueplaene/"
 
     def scrape(self, date, id):
-        allDays={"montag", "dienstag", "mittwoch", "donnerstag", "freitag"}
-        url = self.baseUrl+id+"/"
+        allDays=["montag", "dienstag", "mittwoch", "donnerstag", "freitag"]
+        baseurl = self.baseUrl+id+"/"
         payload = {}
+        allDaysMenus = []
+        #for i in range(len(allDays)):
         for day in allDays:
-            url=url+str(day)+".html"
+            #day=allDays[i]
+            url=baseurl+str(day)+".html"
             print(url)
             http = requests.get(
                 url, params=payload, headers={'User-Agent': 'Mozilla/5.0'}).text
-            print(http)
-            menuDiv = BeautifulSoup(http, "html.parser").find("div", {"class": "table-matrix meals"})
+            #print(http)
+            menuDiv = BeautifulSoup(http, "html.parser").find("div", {"class": "newslist-description"})
             # 0th column is for menu Type, 1st for Monday, 2nd for Tuesday ...
-            print(menuDiv)
-            menus = menuDiv.find_all("tr")
-            # print(menus)
-            del menus[::2]
-            # print(menus)
-            # print(menus)
+            #print(menuDiv)
+            menuNames = menuDiv.find_all("h3")
+            #print(menuNames)
+            menusDescr = menuDiv.find_all("p")[0::2]
+            #print(len(menuNames))
+            #(len(menusDescr))
+            menuString=[]
+            if len(menuNames) == len(menusDescr):
+                for i in range(len(menuNames)):
+                    #print("-------------"+str(i))
+                    menuString.append(str(menuNames[i]).replace("<h3>","")
+                                      .replace("</h3>","").replace("<span>","").replace("</span>","")
+                                      +"\n"+str(menusDescr[i]).replace("<p>","").replace("</p>","").replace("<br/>",""))
+            allDaysMenus.append(menuString)
+            #print(allDaysMenus)
 
-            menuNames = []
-            for menu in menus:
-                days = menu.find_all("td")
-                # print(days)
-                perDay = []
-                for day in days[1:6]:
-                    # print(day)
-                    # print(re.search(r'<td>(.*?)<br/>', str(day)).group(1))
-                    perDay.append((re.search(r'<td>(.*?)</td>', str(day)).group(1)).replace("<br/>", " "))
-                menuNames.append(perDay)
-            # print(menuNames[0:4])
-
-        return menuNames[0:4]
+        return allDaysMenus
         # menuDescriptions[n] = re.search(r'<p>\s+(.*?) <br/><br/>', str(menuDescriptions[n])).group(1)
 
 

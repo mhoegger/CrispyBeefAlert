@@ -24,7 +24,17 @@ PATH = 0
 MENSA = ("Clausiusbar" ,"Dozentenfoyer" ,"food&lab" ,"Foodtrailer" ,"G-ESSbar" ,"Polyterrasse" ,"Polysnack" ,"Tannenbar")
 
 ETHmensa = {"Clausiusbar": 4, "Dozentenfoyer": 6, "food&lab": 28, "Foodtrailer": 9, "G-ESSbar": 11,
-            "Polyterrasse": 12, "Polysnack": 13, "Tannenbar": 14}
+            "Polyterrasse": 12, "Polysnack": 13, "Tannenbar": 14, "Mercato UZH Zentrum": "zentrum-mercato",
+            "Mercato UZH Zentrum Abend": "zentrum-mercato-abend",
+            "Mensa UZH Zentrum": "zentrum-mensa", "Mensa UZH Zentrum Lichthof Rondell": "lichthof-rondell",
+            "Mensa UZH Irchel": "mensa-uzh-irchel", "Cafeteria UZH Irchel Atrium": "irchel-cafeteria-atrium",
+            "Cafeteria UZH Irchel Seerose": "irchel-cafeteria-seerose-mittag",
+            "Cafeteria UZH Irchel Seerose": "irchel-cafeteria-seerose-abend",
+            "Mensa UZH Binzmühle": "mensa-uzh-binzmuehle", "Cafeteria UZH Cityport": "mensa-uzh-cityport",
+            "Rämi 59": "raemi59", "Cafeteria Zentrum für Zahnmedizin (ZZM)": "cafeteria-zzm",
+            "Cafeteria UZH Tierspital": "cafeteria-uzh-tierspital",
+            "Cafeteria UZH Botanischer Garten": "cafeteria-uzh-botgarten",
+            "Cafeteria UZH Plattenstrasse": "cafeteria-uzh-plattenstrasse"}
 
 # function that is executed when the user types /start
 def start(bot, update):
@@ -52,35 +62,37 @@ def listen(bot, update):
     if "<save>" in response:
         print("New save request")
         # search for known mensa name
-        for word in MENSA:
-            if fuzz.token_set_ratio(word, response) > 95:
+        for word in [*ETHmensa]:
+            print(word)
+            print(fuzz.token_set_ratio(word, response))
+            if fuzz.token_set_ratio(word, response) > 50:
                 mensa = ETHmensa[word]
-                #print(mensa)
+                print(mensa)
 
-        # search for menu name which should be between two "
-        menu = response.split('"')[1]
-        # local path concatenate with relative path of json
-        my_path = os.path.abspath(os.path.dirname(__file__))
-        newpath = os.path.join(my_path, PATH)
-        # read in json
-        with open(newpath) as f:
-            data = json.load(f)
+                # search for menu name which should be between two "
+                menu = response.split('"')[1]
+                # local path concatenate with relative path of json
+                my_path = os.path.abspath(os.path.dirname(__file__))
+                newpath = os.path.join(my_path, PATH)
+                # read in json
+                with open(newpath) as f:
+                    data = json.load(f)
 
-        # check json for key of mensa, if not present create empty one
-        if mensa not in data:
-            data[mensa]={}
+                # check json for key of mensa, if not present create empty one
+                if mensa not in data:
+                    data[mensa]={}
 
-        # check json for menu for that mensa, if not create empty list
-        if menu not in data[mensa]:
-            data[mensa][menu]=[]
+                # check json for menu for that mensa, if not create empty list
+                if menu not in data[mensa]:
+                    data[mensa][menu]=[]
 
-        # add chat id to that mensa-menu combination
-        data[mensa][menu].append(update.message.chat_id)
-        # update last edited key of json
-        data["lastUpdate"] = str(datetime.datetime.now())
-        #save updated json
-        with open(PATH, 'w') as jsonFile:
-            json.dump(data, jsonFile)
+                # add chat id to that mensa-menu combination
+                data[mensa][menu].append(update.message.chat_id)
+                # update last edited key of json
+                data["lastUpdate"] = str(datetime.datetime.now())
+                #save updated json
+                with open(PATH, 'w') as jsonFile:
+                    json.dump(data, jsonFile)
 
 
 
@@ -105,7 +117,7 @@ def sendMessage(msg, chat_id, token=TOKEN):
 	chat_id must be a number!
 	"""
 	bot = telegram.Bot(token=token)
-	bot.sendMessage(chat_id=chat_id, text=msg)
+	bot.sendMessage(chat_id=chat_id, text=msg, parse_mode=telegram.ParseMode.MARKDOWN)
 
 
 def main():
