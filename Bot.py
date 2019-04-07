@@ -53,46 +53,89 @@ def help(bot, update):
                      parse_mode=telegram.ParseMode.MARKDOWN)
 
 
-# function reads the users messages
-def listen(bot, update):
+def delete(bot, update):
+    """
+    Delete entry from subscription JSON
+    :param bot: Bot
+    :param update: Bot-Update (Message)
+    :return: Nothing
+    """
     response = update.message.text
     mensa, menu = 0, 0
+    # Check if command present
+    print("delete request")
+    # search for known mensa name
+    for word in [*ETHmensa]:
+        print(word)
+        print(fuzz.token_set_ratio(word, response))
+        if fuzz.token_set_ratio(word, response) > 50:
+            mensa = ETHmensa[word]
+            print(mensa)
 
-    #Check if command present
-    if "<save>" in response:
-        print("New save request")
-        # search for known mensa name
-        for word in [*ETHmensa]:
-            print(word)
-            print(fuzz.token_set_ratio(word, response))
-            if fuzz.token_set_ratio(word, response) > 50:
-                mensa = ETHmensa[word]
-                print(mensa)
-
-                # search for menu name which should be between two "
-                menu = response.split('"')[1]
-                # local path concatenate with relative path of json
-                my_path = os.path.abspath(os.path.dirname(__file__))
-                newpath = os.path.join(my_path, PATH)
-                # read in json
-                with open(newpath) as f:
-                    data = json.load(f)
-
-                # check json for key of mensa, if not present create empty one
-                if mensa not in data:
-                    data[mensa]={}
-
+            # search for menu name which should be between two "
+            menu = response.split('"')[1]
+            # local path concatenate with relative path of json
+            my_path = os.path.abspath(os.path.dirname(__file__))
+            newpath = os.path.join(my_path, PATH)
+            # read in json
+            with open(newpath) as f:
+                data = json.load(f)
+            print(data)
+            # check json for key of mensa, if not present create empty one
+            if str(mensa) in data:
+                print("in data")
                 # check json for menu for that mensa, if not create empty list
-                if menu not in data[mensa]:
-                    data[mensa][menu]=[]
+                if menu in data[str(mensa)]:
+                    # add chat id to that mensa-menu combination
+                    list = data[str(mensa)][menu]
+                    list.remove(update.message.chat_id)
+                    print(list)
+                    data[str(mensa)][menu] = list
+            data["lastUpdate"] = str(datetime.datetime.now())
+            # save updated json
+            with open(PATH, 'w') as jsonFile:
+                json.dump(data, jsonFile)
 
-                # add chat id to that mensa-menu combination
-                data[mensa][menu].append(update.message.chat_id)
-                # update last edited key of json
-                data["lastUpdate"] = str(datetime.datetime.now())
-                #save updated json
-                with open(PATH, 'w') as jsonFile:
-                    json.dump(data, jsonFile)
+def save(bot, update):
+    response = update.message.text
+    mensa, menu = 0, 0
+    # Check if command present
+    print("New save request")
+    # search for known mensa name
+    for word in [*ETHmensa]:
+        print(word)
+        print(fuzz.token_set_ratio(word, response))
+        if fuzz.token_set_ratio(word, response) > 50:
+            mensa = ETHmensa[word]
+            print(mensa)
+
+            # search for menu name which should be between two "
+            menu = response.split('"')[1]
+            # local path concatenate with relative path of json
+            my_path = os.path.abspath(os.path.dirname(__file__))
+            newpath = os.path.join(my_path, PATH)
+            # read in json
+            with open(newpath) as f:
+                data = json.load(f)
+
+            # check json for key of mensa, if not present create empty one
+            if str(mensa) not in data:
+                data[mensa] = {}
+
+            # check json for menu for that mensa, if not create empty list
+            if menu not in data[str(mensa)]:
+                data[str(mensa)][menu] = []
+
+            # add chat id to that mensa-menu combination
+            data[str(mensa)][menu].append(update.message.chat_id)
+            # update last edited key of json
+            data["lastUpdate"] = str(datetime.datetime.now())
+            # save updated json
+            with open(PATH, 'w') as jsonFile:
+                json.dump(data, jsonFile)
+# function reads the users messages
+def listen(bot, update):
+
 
 
 
@@ -141,6 +184,8 @@ def main():
     dispatcher.add_handler(CommandHandler("start", start))
     dispatcher.add_handler(CommandHandler("help", help))
     dispatcher.add_handler(CommandHandler("hilfe", help))
+    dispatcher.add_handler(CommandHandler("save", save))
+    dispatcher.add_handler(CommandHandler("delete", delete))
     dispatcher.add_handler(MessageHandler(Filters.command, unknown))
 
     # Handler that listens to user messages as text and reacts to it
