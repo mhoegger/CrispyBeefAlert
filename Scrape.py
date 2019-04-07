@@ -111,20 +111,23 @@ class UZHMenu(Menu):
             menuDiv = BeautifulSoup(http, "html.parser").find("div", {"class": "newslist-description"})
             # 0th column is for menu Type, 1st for Monday, 2nd for Tuesday ...
             #print(menuDiv)
-            menuNames = menuDiv.find_all("h3")
-            #print(menuNames)
-            menusDescr = menuDiv.find_all("p")[0::2]
-            #print(len(menuNames))
-            #(len(menusDescr))
-            menuString=[]
-            if len(menuNames) == len(menusDescr):
-                for i in range(len(menuNames)):
-                    #print("-------------"+str(i))
-                    menuString.append(str(menuNames[i]).replace("<h3>","")
-                                      .replace("</h3>","").replace("<span>","").replace("</span>","")
-                                      +"\n"+str(menusDescr[i]).replace("<p>","").replace("</p>","").replace("<br/>",""))
-            allDaysMenus.append(menuString)
-            #print(allDaysMenus)
+            try:
+                menuNames = menuDiv.find_all("h3")
+                #print(menuNames)
+                menusDescr = menuDiv.find_all("p")[0::2]
+                #print(len(menuNames))
+                #(len(menusDescr))
+                menuString=[]
+                if len(menuNames) == len(menusDescr):
+                    for i in range(len(menuNames)):
+                        #print("-------------"+str(i))
+                        menuString.append(str(menuNames[i]).replace("<h3>","")
+                                          .replace("</h3>","").replace("<span>","").replace("</span>","")
+                                          +"\n"+str(menusDescr[i]).replace("<p>","").replace("</p>","").replace("<br/>",""))
+                allDaysMenus.append(menuString)
+                #print(allDaysMenus)
+            except:
+                print("FAILED to find h3 ot p")
 
         return allDaysMenus
         # menuDescriptions[n] = re.search(r'<p>\s+(.*?) <br/><br/>', str(menuDescriptions[n])).group(1)
