@@ -1,3 +1,6 @@
+#!/usr/bin/python
+
+
 # Script to handle subscribed user and their requested menus
 import os
 import json
