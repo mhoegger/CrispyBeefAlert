@@ -27,7 +27,7 @@ class Menu():
         todaysWeekday = datetime.datetime.today().weekday()
         if menuWeekDay == todaysWeekday:
             relations = "Today"
-        elif menuWeekDay - todaysWeekday > 0 and c - todaysWeekday == 1:
+        elif menuWeekDay - todaysWeekday > 0 and menuWeekDay - todaysWeekday == 1:
             relations = "Tomorrow"
         elif menuWeekDay - todaysWeekday < 0 and (menuWeekDay+7) - todaysWeekday == 1:
             relations = "Tomorrow"
