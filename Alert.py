@@ -25,7 +25,7 @@ UZHmensa = {"Mercato UZH Zentrum": "zentrum-mercato", "Mercato UZH Zentrum Abend
                          "Cafeteria UZH Botanischer Garten": "cafeteria-uzh-botgarten",
                          "Cafeteria UZH Plattenstrasse": "cafeteria-uzh-plattenstrasse"}
 def main():
-    print("Currenttime: "+datetime.datetime.now())
+    print("Currenttime: "+str(datetime.datetime.now()))
 
 
     config = open("config.txt", "r")
