@@ -8,6 +8,7 @@ import datetime
 from fuzzywuzzy import fuzz
 from Scrape import ETHMenu, UZHMenu
 import Bot as bot
+import datetime
 
 ETHmensa = {"Clausiusbar": 4, "Dozentenfoyer": 6, "food&lab": 28, "Foodtrailer": 9, "G-ESSbar": 11,
                     "Polyterrasse": 12, "Polysnack": 13, "Tannenbar": 14}
@@ -24,6 +25,9 @@ UZHmensa = {"Mercato UZH Zentrum": "zentrum-mercato", "Mercato UZH Zentrum Abend
                          "Cafeteria UZH Botanischer Garten": "cafeteria-uzh-botgarten",
                          "Cafeteria UZH Plattenstrasse": "cafeteria-uzh-plattenstrasse"}
 def main():
+    print("Currenttime: "+datetime.datetime.now())
+
+
     config = open("config.txt", "r")
     for line in config:
         if line.startswith("TOKEN"):
