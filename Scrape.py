@@ -62,19 +62,17 @@ class ETHMenu(Menu):
         #print(menus)
         #print(menus)
 
-        menuNames = []
-        for menu in menus:
-            days = menu.find_all("td")
-            #print(days)
-            perDay = []
-            for day in days[1:6]:
-                #print(day)
-                #print(re.search(r'<td>(.*?)<br/>', str(day)).group(1))
-                perDay.append((re.search(r'<td>(.*?)</td>', str(day)).group(1)).replace("<br/>", " "))
-            menuNames.append(perDay)
-        #print(menuNames[0:4])
-
-        return menuNames[0:4]
+        menuNames = [ [] for i in range(5) ]
+        print(menuNames)
+        for day in menus[:-1]:
+            #print(day)
+            #perDay = []
+            #menuNames.append(perDay)
+            menues = day.find_all("td")
+            for k, men in enumerate(menues[1:6]):
+                menuNames[k].append((re.search(r'<td>(.*?)</td>', str(men)).group(1)).replace("<br/>", " "))
+        print(menuNames[0:5])
+        return menuNames[0:5]
             #menuDescriptions[n] = re.search(r'<p>\s+(.*?) <br/><br/>', str(menuDescriptions[n])).group(1)
 
 
@@ -128,11 +126,10 @@ class UZHMenu(Menu):
                 #print(allDaysMenus)
             except:
                 print("FAILED to find h3 ot p")
-
         return allDaysMenus
         # menuDescriptions[n] = re.search(r'<p>\s+(.*?) <br/><br/>', str(menuDescriptions[n])).group(1)
 
 
 if __name__ == "__main__":
-    newMenu = UZHMenu()
-    newMenu.scrape("2019-04-06","zentrum-mensa")
+    newMenu = ETHMenu()
+    newMenu.scrape("2019-04-19",4)
