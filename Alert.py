@@ -26,8 +26,6 @@ UZHmensa = {"Mercato UZH Zentrum": "zentrum-mercato", "Mercato UZH Zentrum Abend
                          "Cafeteria UZH Plattenstrasse": "cafeteria-uzh-plattenstrasse"}
 def main():
     print("Currenttime: "+str(datetime.datetime.now()))
-
-
     config = open("config.txt", "r")
     for line in config:
         if line.startswith("TOKEN"):
@@ -35,9 +33,7 @@ def main():
         if line.startswith("JSONPATH:"):
             path = line.split("JSONPATH: ")[1].rstrip()
     tooken = str(token)
-    print(tooken)
-
-
+    #print(tooken)
     # Read path to storage of database JSON (db.json)
     print("Main")
     config = open("config.txt", "r")
