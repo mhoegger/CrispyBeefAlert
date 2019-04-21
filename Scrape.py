@@ -56,23 +56,26 @@ class ETHMenu(Menu):
         menuDiv = BeautifulSoup(http, "html.parser").find("div",{"class":"table-matrix meals"})
         # 0th column is for menu Type, 1st for Monday, 2nd for Tuesday ...
         #print(menuDiv)
-        menus = menuDiv.find_all("tr")
-        #print(menus)
-        del menus[::2]
-        #print(menus)
-        #print(menus)
+        try:
+            menus = menuDiv.find_all("tr")
+            #print(menus)
+            del menus[::2]
+            #print(menus)
+            #print(menus)
 
-        menuNames = [ [] for i in range(5) ]
-        print(menuNames)
-        for day in menus[:-1]:
-            #print(day)
-            #perDay = []
-            #menuNames.append(perDay)
-            menues = day.find_all("td")
-            for k, men in enumerate(menues[1:6]):
-                menuNames[k].append((re.search(r'<td>(.*?)</td>', str(men)).group(1)).replace("<br/>", " "))
-        print(menuNames[0:5])
-        return menuNames[0:5]
+            menuNames = [ [] for i in range(5) ]
+            print(menuNames)
+            for day in menus[:-1]:
+                #print(day)
+                #perDay = []
+                #menuNames.append(perDay)
+                menues = day.find_all("td")
+                for k, men in enumerate(menues[1:6]):
+                    menuNames[k].append((re.search(r'<td>(.*?)</td>', str(men)).group(1)).replace("<br/>", " "))
+            print(menuNames[0:5])
+            return menuNames[0:5]
+        except:
+            return[["-"],["-"],["-"],["-"],["-"]]
             #menuDescriptions[n] = re.search(r'<p>\s+(.*?) <br/><br/>', str(menuDescriptions[n])).group(1)
 
 
