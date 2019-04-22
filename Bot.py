@@ -169,7 +169,7 @@ class MenuAlertBot:
                                 # remove key if list is empty
                                 if len(data[str(mensa)][menu]) <= 0:
                                     del data[str(mensa)][menu]
-                                    msg = "'"+str(menu)+"' gelöscht für '"+str(mensa)+"'."
+                                    msg = "'"+str(menu)+"' gelöscht für '"+str(key)+"'."
                                     sendMessage(msg, update.message.chat_id, self.TOKEN)
                             data["lastUpdate"] = str(datetime.datetime.now())
                             # save updated json
@@ -201,6 +201,7 @@ class MenuAlertBot:
                     print(alias)
                     print(word)
                     if fuzz.token_set_ratio(alias, word) > 50:
+                        print("FOUND")
                         found = True
                         mensa = self.MENSA[key]
                         # search for menu name which should be between two "
@@ -224,7 +225,7 @@ class MenuAlertBot:
                             # add chat id to that mensa-menu combination if not present
                             if update.message.chat_id not in data[str(mensa)][menu]:
                                 data[str(mensa)][menu].append(update.message.chat_id)
-                                msg = "'"+str(menu)+"' gespeichert für '"+str(mensa)+"'."
+                                msg = "'"+str(menu)+" ' gespeichert für '"+str(key)+"'."
                                 sendMessage(msg, update.message.chat_id, self.TOKEN)
                             # update last edited key of json
                             data["lastUpdate"] = str(datetime.datetime.now())
