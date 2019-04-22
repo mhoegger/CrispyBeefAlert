@@ -170,7 +170,7 @@ class MenuAlertBot:
                         with open(self.JSONPATH, 'w') as jsonFile:
                             json.dump(data, jsonFile)
                     except:
-                        if response.coumt(",") < 1:
+                        if response.count(",") < 1:
                             msg = "Bitte stelle sicher das du den Namen der Mensa und das Menu mit einem Komme (',') trennst."
                             sendMessage(msg, update.message.chat_id, self.TOKEN)
                         else:
@@ -219,7 +219,7 @@ class MenuAlertBot:
                         with open(self.JSONPATH, 'w') as jsonFile:
                             json.dump(data, jsonFile)
                     except:
-                        if response.coumt(",") < 1:
+                        if response.count(",") < 1:
                             msg = "Bitte stelle sicher das du den Namen der Mensa und das Menu mit einem Komme (',') trennst."
                             sendMessage(msg, update.message.chat_id, self.TOKEN)
                         else:
