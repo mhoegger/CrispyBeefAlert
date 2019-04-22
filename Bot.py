@@ -149,6 +149,8 @@ class MenuAlertBot:
                     print(word)
                     if fuzz.token_set_ratio(alias, word) > 50:
                         mensa = self.MENSA[key]
+                        found = True
+
                         # search for menu name which should listed after a ","
                         try:
                             menu = response.split(',')[1]
