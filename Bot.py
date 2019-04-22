@@ -141,45 +141,51 @@ class MenuAlertBot:
         # Check if command present
         print("delete request")
         # search for known mensa name
+        found = False
         for key, value in self.MENSA_ALIAS.items():
             for alias in value:
-                if fuzz.token_set_ratio(alias, response) > 50:
-                    mensa = self.MENSA[key]
-                    # search for menu name which should listed after a ","
-                    try:
-                        menu = response.split(',')[1]
-                        # local path concatenate with relative path of json
-                        my_path = os.path.abspath(os.path.dirname(__file__))
-                        newpath = os.path.join(my_path, self.JSONPATH)
-                        # read in json
-                        with open(newpath) as f:
-                            data = json.load(f)
-                        # check json for key of mensa, if not present create empty one
-                        if str(mensa) in data:
-                            # check json for menu for that mensa
-                            if menu in data[str(mensa)]:
-                                # add chat id to that mensa-menu combination
-                                list = data[str(mensa)][menu]
-                                list.remove(update.message.chat_id)
-                                data[str(mensa)][menu] = list
-                            # remove key if list is empty
-                            if len(data[str(mensa)][menu]) <= 0:
-                                del data[str(mensa)][menu]
-                        data["lastUpdate"] = str(datetime.datetime.now())
-                        # save updated json
-                        with open(self.JSONPATH, 'w') as jsonFile:
-                            json.dump(data, jsonFile)
-                    except:
-                        if response.count(",") < 1:
-                            msg = "Bitte stelle sicher das du den Namen der Mensa und das Menu mit einem Komme (',') trennst."
-                            sendMessage(msg, update.message.chat_id, self.TOKEN)
-                        else:
-                            msg = "Leider ist etwas schief gelaufen, bitte überprüfe deine Eingabe. Schreibe /help für " \
-                                  "eine Anleitung zur korrekten Eingabe."
-                            sendMessage(msg, update.message.chat_id, self.TOKEN)
-                else:
-                    msg = "Leider wurde keine passende Mensa in unserer Datenbank gefunden."
-                    sendMessage(msg, update.message.chat_id, self.TOKEN)
+                for word in response.split():
+                    print(alias)
+                    print(word)
+                    if fuzz.token_set_ratio(alias, word) > 50:
+                        mensa = self.MENSA[key]
+                        # search for menu name which should listed after a ","
+                        try:
+                            menu = response.split(',')[1]
+                            # local path concatenate with relative path of json
+                            my_path = os.path.abspath(os.path.dirname(__file__))
+                            newpath = os.path.join(my_path, self.JSONPATH)
+                            # read in json
+                            with open(newpath) as f:
+                                data = json.load(f)
+                            # check json for key of mensa, if not present create empty one
+                            if str(mensa) in data:
+                                # check json for menu for that mensa
+                                if menu in data[str(mensa)]:
+                                    # add chat id to that mensa-menu combination
+                                    list = data[str(mensa)][menu]
+                                    list.remove(update.message.chat_id)
+                                    data[str(mensa)][menu] = list
+                                # remove key if list is empty
+                                if len(data[str(mensa)][menu]) <= 0:
+                                    del data[str(mensa)][menu]
+                                    msg = "'"+str(menu)+"' gelöscht für '"+str(mensa)+"'."
+                                    sendMessage(msg, update.message.chat_id, self.TOKEN)
+                            data["lastUpdate"] = str(datetime.datetime.now())
+                            # save updated json
+                            with open(self.JSONPATH, 'w') as jsonFile:
+                                json.dump(data, jsonFile)
+                        except:
+                            if response.count(",") < 1:
+                                msg = "Bitte stelle sicher das du den Namen der Mensa und das Menu mit einem Komma (',') trennst."
+                                sendMessage(msg, update.message.chat_id, self.TOKEN)
+                            else:
+                                msg = "Leider ist etwas schief gelaufen, bitte überprüfe deine Eingabe. Schreibe /help für " \
+                                      "eine Anleitung zur korrekten Eingabe."
+                                sendMessage(msg, update.message.chat_id, self.TOKEN)
+        if not found:
+            msg = "Leider wurde keine passende Mensa in unserer Datenbank gefunden."
+            sendMessage(msg, update.message.chat_id, self.TOKEN)
 
 
     def save(self, bot, update):
@@ -188,47 +194,55 @@ class MenuAlertBot:
         # Check if command present
         print("New save request")
         # search for known mensa name
+        found = False
         for key, value in self.MENSA_ALIAS.items():
             for alias in value:
-                if fuzz.token_set_ratio(alias, response) > 50:
-                    mensa = self.MENSA[key]
-                    # search for menu name which should be between two "
-                    try:
-                        menu = response.split(',')[1]
-                        # local path concatenate with relative path of json
-                        my_path = os.path.abspath(os.path.dirname(__file__))
-                        newpath = os.path.join(my_path, self.JSONPATH)
-                        # read in json
-                        with open(newpath) as f:
-                            data = json.load(f)
+                for word in response.split():
+                    print(alias)
+                    print(word)
+                    if fuzz.token_set_ratio(alias, word) > 50:
+                        found = True
+                        mensa = self.MENSA[key]
+                        # search for menu name which should be between two "
+                        try:
+                            menu = response.split(',')[1]
+                            # local path concatenate with relative path of json
+                            my_path = os.path.abspath(os.path.dirname(__file__))
+                            newpath = os.path.join(my_path, self.JSONPATH)
+                            # read in json
+                            with open(newpath) as f:
+                                data = json.load(f)
 
-                        # check json for key of mensa, if not present create empty one
-                        if str(mensa) not in data:
-                            data[mensa] = {}
+                            # check json for key of mensa, if not present create empty one
+                            if str(mensa) not in data:
+                                data[mensa] = {}
 
-                        # check json for menu for that mensa, if not create empty list
-                        if menu not in data[str(mensa)]:
-                            data[str(mensa)][menu] = []
+                            # check json for menu for that mensa, if not create empty list
+                            if menu not in data[str(mensa)]:
+                                data[str(mensa)][menu] = []
 
-                        # add chat id to that mensa-menu combination if not present
-                        if update.message.chat_id not in data[str(mensa)][menu]:
-                            data[str(mensa)][menu].append(update.message.chat_id)
-                        # update last edited key of json
-                        data["lastUpdate"] = str(datetime.datetime.now())
-                        # save updated json
-                        with open(self.JSONPATH, 'w') as jsonFile:
-                            json.dump(data, jsonFile)
-                    except:
-                        if response.count(",") < 1:
-                            msg = "Bitte stelle sicher das du den Namen der Mensa und das Menu mit einem Komme (',') trennst."
-                            sendMessage(msg, update.message.chat_id, self.TOKEN)
-                        else:
-                            msg = "Leider ist etwas schief gelaufen, bitte überprüfe deine Eingabe. Schreibe /help für " \
-                                  "eine Anleitung zur korrekten Eingabe."
-                            sendMessage(msg, update.message.chat_id, self.TOKEN)
-                else:
-                    msg = "Leider wurde keine passende Mensa in unserer Datenbank gefunden."
-                    sendMessage(msg, update.message.chat_id, self.TOKEN)
+                            # add chat id to that mensa-menu combination if not present
+                            if update.message.chat_id not in data[str(mensa)][menu]:
+                                data[str(mensa)][menu].append(update.message.chat_id)
+                                msg = "'"+str(menu)+"' gespeichert für '"+str(mensa)+"'."
+                                sendMessage(msg, update.message.chat_id, self.TOKEN)
+                            # update last edited key of json
+                            data["lastUpdate"] = str(datetime.datetime.now())
+                            # save updated json
+                            with open(self.JSONPATH, 'w') as jsonFile:
+                                json.dump(data, jsonFile)
+                        except:
+                            if response.count(",") < 1:
+                                msg = "Bitte stelle sicher das du den Namen der Mensa und das Menu mit einem Komme (',') trennst."
+                                sendMessage(msg, update.message.chat_id, self.TOKEN)
+                            else:
+                                msg = "Leider ist etwas schief gelaufen, bitte überprüfe deine Eingabe. Schreibe /help für " \
+                                      "eine Anleitung zur korrekten Eingabe."
+                                sendMessage(msg, update.message.chat_id, self.TOKEN)
+        if not found:
+            msg = "Leider wurde keine passende Mensa in unserer Datenbank gefunden."
+            sendMessage(msg, update.message.chat_id, self.TOKEN)
+
     # function reads the users messages
     def listen(self, bot, update):
         bot.send_message(chat_id=update.message.chat_id,
