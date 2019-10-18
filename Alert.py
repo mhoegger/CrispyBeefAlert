@@ -10,30 +10,24 @@ from Scrape import ETHMenu, UZHMenu
 import Bot as bot
 import datetime
 
-ETHmensa = {"Clausiusbar": 4, "Dozentenfoyer": 6, "food&lab": 28, "Foodtrailer": 9, "G-ESSbar": 11,
-                    "Polyterrasse": 12, "Polysnack": 13, "Tannenbar": 14}
 
-UZHmensa = {"Mercato UZH Zentrum": "zentrum-mercato", "Mercato UZH Zentrum Abend": "zentrum-mercato-abend",
-                         "Mensa UZH Zentrum": "zentrum-mensa", "Mensa UZH Zentrum Lichthof Rondell": "lichthof-rondell",
-                         "Mensa UZH Irchel": "mensa-uzh-irchel",
-                         "Cafeteria UZH Irchel Atrium": "irchel-cafeteria-atrium",
-                         "Cafeteria UZH Irchel Seerose": "irchel-cafeteria-seerose-mittag",
-                         "Cafeteria UZH Irchel Seerose": "irchel-cafeteria-seerose-abend",
-                         "Mensa UZH Binzmühle": "mensa-uzh-binzmuehle", "Cafeteria UZH Cityport": "mensa-uzh-cityport",
-                         "Rämi 59": "raemi59", "Cafeteria Zentrum für Zahnmedizin (ZZM)": "cafeteria-zzm",
-                         "Cafeteria UZH Tierspital": "cafeteria-uzh-tierspital",
-                         "Cafeteria UZH Botanischer Garten": "cafeteria-uzh-botgarten",
-                         "Cafeteria UZH Plattenstrasse": "cafeteria-uzh-plattenstrasse"}
 def main():
+    with open('config.json') as f:
+        config_json = json.load(f)
+
+
+
+
     print("Currenttime: "+str(datetime.datetime.now()))
     config = open("config.txt", "r")
     for line in config:
         if line.startswith("TOKEN"):
-            token = line.split("TOKEN: ")[1].rstrip()
+            token = str(line.split("TOKEN: ")[1].rstrip())
         if line.startswith("JSONPATH:"):
             path = line.split("JSONPATH: ")[1].rstrip()
-    tooken = str(token)
-    #print(tooken)
+        if line.startswith("ADMIN_CHAT:"):
+            admin_chat = line.split("ADMIN_CHAT: ")[1].rstrip()
+
     # Read path to storage of database JSON (db.json)
     print("Main")
     config = open("config.txt", "r")
@@ -85,34 +79,31 @@ def main():
                                     if rel == "Today":
                                         msg = "Heute gibt es folgendes Menu in *"+name+"*: \n"+menu
                                         print(msg)
-                                        print(tooken)
+                                        print(token)
                                         for singleID in chatId:
-                                            bot.sendMessage(msg,singleID,token=tooken)
+                                            bot.sendMessage(msg,singleID,token=token)
                                     elif rel == "Tomorrow":
                                         msg = "Morgen gibt es folgendes Menu in *"+name+"*: \n"+menu
                                         print(msg)
-                                        print(tooken)
+                                        print(token)
                                         for singleID in chatId:
-                                            bot.sendMessage(msg,singleID,token=tooken)
+                                            bot.sendMessage(msg,singleID,token=token)
                                     elif rel == "Day after Tomorrow":
                                         msg = "Übermorgen gibt es folgendes Menu in *"+name+"*: \n"+menu
                                         print(msg)
-                                        print(tooken)
+                                        print(token)
                                         for singleID in chatId:
-                                            bot.sendMessage(msg,singleID,token=tooken)
+                                            bot.sendMessage(msg,singleID,token=token)
                                     elif today.weekday()==0:
                                         # If Monday tell if in current week menu is available
                                         daystrings = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"]
                                         msg = "Am "+ daystrings[int(rel)] +" gibt es folgendes Menu in *"+name+"*: \n"+menu
                                         print(msg)
-                                        print(tooken)
+                                        print(token)
                                         for singleID in chatId:
-                                            bot.sendMessage(msg,singleID,token=tooken)
+                                            bot.sendMessage(msg,singleID,token=token)
 
-                        #print(today)
-                    #......
-            ### for all saved strings
-        #Token_Set_Ratio = fuzz.token_set_ratio(Str1,Str2)
+
 
 
 if __name__ == '__main__':

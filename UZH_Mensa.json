@@ -1,0 +1,112 @@
+{
+  "Mercato UZH Zentrum": {
+    "id": "zentrum-mercato",
+    "alias": [
+      "Mercato UZH Zentrum",
+      "Untere Mensa",
+      "Uni Mensa"
+    ]
+  },
+  "Mercato UZH Zentrum Abend": {
+    "id": "zentrum-mercato-abend",
+    "alias": [
+      "Mercato UZH Zentrum Abend",
+      "Uni Mensa Abend"
+    ]
+  },
+  "Mensa UZH Zentrum": {
+    "id": "zentrum-mensa",
+    "alias": [
+      "Mensa UZH Zentrum",
+      "Obere Mensa"
+    ]
+  },
+  "Mensa UZH Zentrum Lichthof Rondell": {
+    "id": "lichthof-rondell",
+    "alias": [
+      "Mensa UZH Zentrum Lichthof Rondell",
+      "Liechthof",
+      "Rondell"
+    ]
+  },
+  "Mensa UZH Irchel": {
+    "id": "mensa-uzh-irchel",
+    "alias": [
+      "Mensa UZH Irchel",
+      "Irchel"
+    ]
+  },
+  "Cafeteria UZH Irchel Atrium": {
+    "id": "irchel-cafeteria-atrium",
+    "alias": [
+      "Cafeteria UZH Irchel Atrium",
+      "Atrium"
+    ]
+  },
+  "Cafeteria UZH Irchel Seerose Mittag": {
+    "id": "irchel-cafeteria-seerose-mittag",
+    "alias": [
+      "Cafeteria UZH Irchel Seerose",
+      "Seerose",
+      "Seerose Mittag"
+    ]
+  },
+  "Cafeteria UZH Irchel Seerose Abend": {
+    "id": "irchel-cafeteria-seerose-abend",
+    "alias": [
+      "Cafeteria UZH Irchel Seerose",
+      "Seerose",
+      "Seerose Abend"
+    ]
+  },
+  "Mensa UZH Binzmühle": {
+    "id": "mensa-uzh-binzmuehle",
+    "alias": [
+      "Mensa UZH Binzmühle",
+      "Binz"
+    ]
+  },
+  "Cafeteria UZH Cityport": {
+    "id": "mensa-uzh-cityport",
+    "alias": [
+      "Cafeteria UZH Cityport",
+      "Cityport"
+    ]
+  },
+  "Rämi 59": {
+    "id": "raemi59",
+    "alias": [
+      "Rämi 59",
+      "rämi"
+    ]
+  },
+  "Cafeteria Zentrum für Zahnmedizin (ZZM)": {
+    "id": "cafeteria-zzm",
+    "alias": [
+      "Cafeteria Zentrum für Zahnmedizin (ZZM)",
+      "ZZM"
+    ]
+  },
+  "Cafeteria UZH Tierspital": {
+    "id": "cafeteria-uzh-tierspital",
+    "alias": [
+      "Cafeteria UZH Tierspital",
+      "Tierspital"
+    ]
+  },
+  "Cafeteria UZH Botanischer Garten": {
+    "id": "cafeteria-uzh-botgarten",
+    "alias": [
+      "Cafeteria UZH Botanischer Garten",
+      "Botanischer Garten"
+    ]
+  },
+  "Platte 14": {
+    "id": "platte-14",
+    "alias": [
+      "Cafeteria UZH Plattenstrasse",
+      "Plattenstrasse",
+      "BWL"
+    ]
+  }
+}
