@@ -38,7 +38,7 @@ class Menu():
         else:
             relations = menuWeekDay
         return relations
-        #print(todaysWeekday)
+        #print(todaysWeekday)ddd
 
 class ETHMenu(Menu):
 
