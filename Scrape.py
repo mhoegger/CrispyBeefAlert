@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 import re
 import datetime
-
+import json
 
 class Menu:
     """Class to define the overall structure of a Menu that should be scraped
@@ -13,11 +13,10 @@ class Menu:
         self.baseUrl = {}
 
     def scrapeAll(self, date):
-        dict = {}
-        for name, id in self.MensaDict.items():
-            mensaMenu = self.scrape(date, str(id))
-            dict[str(id)] = mensaMenu
-        return dict
+        dict_over_mensi = {}
+        for key in self.MensaDict:
+            dict_over_mensi[str(self.MensaDict[key]["id"])] = self.scrape(date, str(self.MensaDict[key]["id"]))
+        return dict_over_mensi
 
 
     def scrape(self, date, id):
@@ -42,25 +41,22 @@ class Menu:
         #print(todaysWeekday)ddd
 
 class ETHMenu(Menu):
+    """ Class to handle the ETH menu plans
 
-    def __init__(self):
+    :param path_to_json: path to the JSON file where the different mensi are described with id (which is used in the
+    url) and some alias names which might be used by the users.
+    :type path_to_json: Path or String
+    """
+
+    def __init__(self, path_to_json):
+        """constructor method
+
+        set the base url from where the menus should be scraped from
+        """
         super().__init__()
-        self.MensaDict = {
-            "Clausiusbar": 4,
-            "Dozentenfoyer": 6,
-            "food&lab": 28,
-            "Foodtrailer": 9,
-            "G-ESSbar": 11,
-            "Polyterrasse": 12,
-            "Polysnack": 13,
-            "Tannenbar": 14,
-            "food market - pizza pasta": 18,
-            "food market - green day": 19,
-            "food market - grill bbQ": 20,
-            "FUSION meal": 21,
-            "FUSION coffee": 22,
-            "BELLAVISTA": 25,
-        }
+        with open(path_to_json) as f:
+            ETH_json = json.load(f)
+        self.MensaDict = ETH_json
         self.baseUrl = "https://www.ethz.ch/de/campus/erleben/gastronomie-und-einkaufen/gastronomie/menueplaene/offerWeek.html"
 
     def scrape(self, date, id):
@@ -88,7 +84,8 @@ class ETHMenu(Menu):
             for day_menu in menus[:-1]:  # iterate over the different weekdays
                 menues = day_menu.find_all("td")
                 for k, men in enumerate(menues[1:6]):  # skip first one because it tells the weekday
-                    menu_names[k].append((re.search(r'<td>(.*?)</td>', str(men)).group(1)).replace("<br/>", " "))
+                    menu_names[k].append((re.search(r'<td>(.*?)</td>', str(men).replace("<h3>", "**").
+                                           replace("</h3>", "** ")).group(1)).replace("<br/>", " "))
             return "success", menu_names[0:5]
 
         except RuntimeError as e:
@@ -97,37 +94,40 @@ class ETHMenu(Menu):
 
 
 class UZHMenu(Menu):
+    """ Class to handle the UZH menu plans
 
-    def __init__(self):
+    :param path_to_json: path to the JSON file where the different mensi are described with id (which is used in the
+    url) and some alias names which might be used by the users.
+    :type path_to_json: Path or String
+    """
+
+    def __init__(self, path_to_json):
+        """constructor method
+
+        set the base url from where the menus should be scraped from
+        """
         super().__init__()
-        self.MensaDict = {
-            "Mercato UZH Zentrum": "zentrum-mercato",
-            "Mercato UZH Zentrum Abend": "zentrum-mercato-abend",
-            "Mensa UZH Zentrum": "zentrum-mensa",
-            "Mensa UZH Zentrum Lichthof Rondell": "lichthof-rondell",
-            "Mensa UZH Irchel": "mensa-uzh-irchel",
-            "Cafeteria UZH Irchel Atrium": "irchel-cafeteria-atrium",
-            "Cafeteria UZH Irchel Seerose": "irchel-cafeteria-seerose-mittag",
-            "Cafeteria UZH Irchel Seerose Abend": "irchel-cafeteria-seerose-abend",
-            "Mensa UZH Binzmühle": "mensa-uzh-binzmuehle",
-            "Cafeteria UZH Cityport": "mensa-uzh-cityport",
-            "Rämi 59": "raemi59",
-            "Cafeteria Zentrum für Zahnmedizin (ZZM)": "cafeteria-zzm",
-            "Cafeteria UZH Tierspital": "cafeteria-uzh-tierspital",
-            "Cafeteria UZH Botanischer Garten": "cafeteria-uzh-botgarten",
-            "Platte 14": "platte-14"
-        }
+        with open(path_to_json) as f:
+            UZH_json = json.load(f)
+        self.MensaDict = UZH_json
         self.baseUrl = "https://www.mensa.uzh.ch/de/menueplaene/"
 
     def scrape(self, date, id):
+        """Scrapes the website of the UZH to get the menus for each day and for each mensa.
+
+        :param date: date of the date where the menu should be fetched for
+        :type date: Date: YYYY-MM-DD
+        :param id: ID of the mensa for with the menu should be fetched
+        :type id: Integer
+
+        :return: Status, Menus
+        :rtype: String, List of Strings
+        """
         day_strings = ["montag", "dienstag", "mittwoch", "donnerstag", "freitag"]
         base_url = self.baseUrl+id+"/"
         payload = {}
-
         all_days_menus = []
-
         errors = ""
-
         for day in day_strings:
             url = base_url+str(day)+".html"
             http = requests.get(
@@ -155,5 +155,5 @@ class UZHMenu(Menu):
 
 
 if __name__ == "__main__":
-    newMenu = ETHMenu()
-    newMenu.scrape("2019-04-19",4)
+    newMenu = ETHMenu('ETH_Mensa.json')
+    print(newMenu.scrape("2019-10-19",4))

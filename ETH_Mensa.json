@@ -1,0 +1,106 @@
+{
+  "Clausiusbar": {
+    "id": 4,
+    "alias": [
+      "Clausiusbar",
+      "AsiaMensa",
+      "Clausius"
+    ]
+  },
+  "Dozentenfoyer": {
+    "id": 6,
+    "alias": [
+      "Dozentenfoyer"
+    ]
+  },
+  "food&lab": {
+    "id": 28,
+    "alias": [
+      "food&lab"
+    ]
+  },
+  "Foodtrailer": {
+    "id": 9,
+    "alias": [
+      "Foodtrailer",
+      "Imbissstand"
+    ]
+  },
+  "G-ESSbar": {
+    "id": 11,
+    "alias": [
+      "G-ESSbar",
+      "GESS"
+    ]
+  },
+  "Polyterrasse": {
+    "id": 12,
+    "alias": [
+      "Polyterrasse",
+      "Poly",
+      "ETHMensa"
+    ]
+  },
+  "Polysnack": {
+    "id": 13,
+    "alias": [
+      "Polysnack"
+
+    ]
+  },
+  "Tannenbar": {
+    "id": 14,
+    "alias": [
+      "Tannenbar"
+
+    ]
+  },
+  "food market - pizza pasta": {
+    "id": 18,
+    "alias": [
+      "food market",
+      "pizza pasta",
+      "Hönggerberg"
+    ]
+  },
+  "food market - green day": {
+    "id": 19,
+    "alias": [
+      "food market",
+      "green day",
+      "Hönggerberg"
+    ]
+  },
+  "food market - grill bbQ": {
+    "id": 20,
+    "alias": [
+      "food market",
+      "grill bbQ",
+      "Hönggerberg"
+    ]
+  },
+  "FUSION meal": {
+    "id": 21,
+    "alias": [
+      "FUSION",
+      "Hönggerberg"
+    ]
+  },
+  "FUSION coffee": {
+    "id": 22,
+    "alias": [
+      "FUSION",
+      "Hönggerberg",
+      "Coffee"
+    ]
+  },
+  "BELLAVISTA": {
+    "id": 25,
+    "alias": [
+      "BELLAVISTA"
+    ]
+  }
+}
+
+
+
