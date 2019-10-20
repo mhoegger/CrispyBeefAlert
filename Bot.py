@@ -39,14 +39,76 @@ class MenuAlertBot:
         my_path = os.path.abspath(os.path.dirname(__file__))
         newpath = os.path.join(my_path, self.JSONPATH)
         # read in json
-        with open(newpath) as f:
-            self.json_data = json.load(f)
+        with open(configfile) as f:
+            config_json = json.load(f)
 
+        # Create DataBase
+        db_file = config_json["db_path"]
         try:
             self.conn = sqlite3.connect(db_file)
         except RuntimeError as e:
             print(e)
 
+    def _addMenu(self, user_menu: str) -> str:
+        c = self.conn.cursor()
+        c.execute('''SELECT (menu) FROM available_menus''')
+        max_score = 0
+        found_menu = None
+        for db_menu in c:
+            score = fuzz.token_set_ratio(db_menu, user_menu)
+            if score > 50 and score > max_score:
+                max_score = score
+                found_menu = db_menu
+        return found_menu
+
+    def _searchMenuForUser(self, chat_id: int, user_menu: str, user_mensa: str) -> bool:
+        c = self.conn.cursor()
+        c.execute('''SELECT (id, user_id, mensa, menu) FROM saved_alerts WHERE user_id = ? AND mensa = ? AND menu = ?''', (chat_id, user_mensa, user_menu))
+        max_score = 0
+        found_menu = None
+        for db_menu in c:
+            score = fuzz.token_set_ratio(db_menu, user_menu)
+            if score > 50 and score > max_score:
+                max_score = score
+                found_menu = db_menu
+        return found_menu
+
+    def _saveAlert(self, chat_id: int, user_mensa: str, user_menu: str) -> str:
+        """
+
+        :param chat_id:
+        :type chat_id: Integer
+        :param user_mensa:
+        :type user_mensa: String
+        :param user_menu:
+        :type user_menu: String
+
+        :return: Success/ Error Message
+        :rtype: String
+        """
+        c = self.conn.cursor()
+
+        c.execute('''SELECT (mensa, alias) FROM mensa_alias''')
+        found_mensi = []
+        for db_mensa, db_alias in c:
+            if fuzz.token_set_ratio(db_alias, user_mensa) > 50 and db_mensa not in found_mensi:
+                found_mensi.append(db_mensa)
+        if len(found_mensi) <= 0:
+            return "No matching mensa found in our Database. Please type /mensi to see a list of available mensi. " + \
+                   "If the mensa you meant is in the list please use an appropriate name for it."
+        else:
+            found_menu = self._addMenu(user_menu)
+            if not found_menu:
+                for found_mensa in found_mensi:
+                    # add menu to database
+                    c.execute("""INSERT INTO available_menus (menu) VALUES (?);""", user_menu)
+                    c.execute("""INSERT INTO saved_alerts (user_id, mensa, menu) VALUES (?, ?, ?);""",
+                              (chat_id, found_mensa, user_menu))
+            else:
+                for found_mensa in found_mensi:
+                    # add menu to database
+                    c.execute("""INSERT INTO saved_alerts (user_id, mensa, menu) VALUES (?, ?, ?);""",
+                              (chat_id, found_mensa, found_menu))
 
 
     def startBot(self) -> None:

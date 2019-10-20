@@ -23,6 +23,10 @@ class Setup:
                   university text NOT NULL
                   );""")
 
+        c.execute("""CREATE TABLE IF NOT EXISTS available_menus ( 
+                  menu text PRIMARY KEY NOT NULL
+                  );""")
+
         # create table for alias
         c.execute("""CREATE TABLE IF NOT EXISTS mensa_alias ( 
                   id integer PRIMARY KEY AUTOINCREMENT,
@@ -37,7 +41,8 @@ class Setup:
                   user_id integer NOT NULL, 
                   mensa text NOT NULL,
                   menu text NOT NULL,
-                  FOREIGN KEY (mensa) REFERENCES available_mensa (mensa)
+                  FOREIGN KEY (mensa) REFERENCES available_mensa (mensa),
+                  FOREIGN KEY (menu) REFERENCES available_menus (menu)
                   );""")
 
         # create table for all messages
@@ -59,5 +64,4 @@ class Setup:
                     c.execute("""INSERT INTO mensa_alias (mensa, alias) VALUES (?, ?);""", (mensa_key, mensa_alias))
 
         self.conn.commit()
-        self.conn.close()
 
