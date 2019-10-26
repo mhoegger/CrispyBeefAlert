@@ -6,13 +6,14 @@ import os
 class DataBaseHandler:
     def __init__(self, db_file: str):
         try:
-            self.conn = sqlite3.connect(db_file)
+            self.conn = sqlite3.connect(db_file, check_same_thread=False)
         except RuntimeError as e:
             print(e)
 
     def writeMenu(self, user_menu: str) -> None:
         c = self.conn.cursor()
-        c.execute("""INSERT INTO available_menus (menu) VALUES (?);""", user_menu)
+        print(user_menu)
+        c.execute("""INSERT INTO available_menus (menu) VALUES (?);""", (user_menu,))
         self.conn.commit()
 
     def write_alert(self, chat_id: int, found_mensa: str, user_menu: str) -> None:
@@ -29,15 +30,23 @@ class DataBaseHandler:
 
     def isAlertSaved(self, chat_id: int, user_mensa: str, user_menu: str) -> bool:
         c = self.conn.cursor()
-        c.execute('''SELECT (id, user_id, mensa, menu) FROM saved_alerts 
+        c.execute('''SELECT id, user_id, mensa, menu FROM saved_alerts 
                     WHERE user_id = ? AND mensa = ? AND menu = ?''', (chat_id, user_mensa, user_menu))
         return len(c.fetchall()[0]) > 0
 
-
     def selectMensaAlias(self) -> list:
         c = self.conn.cursor()
-        c.execute('''SELECT (mensa, alias) FROM mensa_alias''')
+        c.execute('''SELECT mensa, alias FROM mensa_alias''')
+        res = c.fetchall()
+        print(res)
+        return res
+
+    def countAlerts(self):
+        c = self.conn.cursor()
+        c.execute('''SELECT mensa, menu, sub_count FROM (
+            SELECT mensa, menu, COUNT(DISTINCT user_id) AS sub_count FROM saved_alerts GROUP BY mensa, menu);'''),
         return c.fetchall()
+
 
     def createDataBase(self, list_of_mensa_json: str):
 

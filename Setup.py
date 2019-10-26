@@ -25,6 +25,7 @@ class Setup:
                   );""")
 
         c.execute("""CREATE TABLE IF NOT EXISTS available_menus ( 
+                  id integer PRIMARY KEY AUTOINCREMENT,
                   menu text PRIMARY KEY NOT NULL
                   );""")
 
@@ -65,4 +66,7 @@ class Setup:
                     c.execute("""INSERT INTO mensa_alias (mensa, alias) VALUES (?, ?);""", (mensa_key, mensa_alias))
 
         self.conn.commit()
+
+if __name__ == "__main__":
+    setup = Setup("./config.json", ["./ETH_Mensa.json", "./UZH_Mensa.json"])
 
