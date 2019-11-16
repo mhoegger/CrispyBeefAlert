@@ -1,0 +1,133 @@
+{
+  "welcome": {
+    "DE": [
+      "Willkommen beim Crispy Beef Alert. \n\n",
+      "Speichere deine Lieblingsmenus deiner Stamm-Mensa und bekomme eine Nachricht sobald dein ",
+      "Wunschgericht wieder auf de Menu-Karte steht. \n",
+      "Um ein Menu zu speichern schreibe \n /save <Mensa>, <Menu> \n",
+      "Beispiel: \n /save Clausiusbar, Crispy Beef \n\n",
+      "Wenn du für ein Gericht keinen Alarm mehr bekommen möchtest schreibe \n /delete <Mensa>, <Menu>\n"
+    ],
+    "EN": [
+      "Welcome to the Crispy Beef Alert. \n\n",
+      "Save your favourite menu of your to go mensa and get alerted whenever your ",
+      "desired dish appears on the menu card. \n\n",
+      "To save a menu type \n /save <Mensa>, <Menu> \n",
+      "Example: /save Clausiusbar, Crispy Beef \n\n",
+      "When you don't want to get alerted anymore you can delete the alert by typing \n /delete <Mensa>, <Menu>\n"
+    ]
+  },
+  "save_alert": {
+    "new_menu_saved": {
+      "DE": [
+        "Alarm wurde gespeichert für Menü '%s' in der Mensa '%s'."
+      ],
+      "EN": [
+        "Alert saved for new menu '%s' for mensa '%s'."
+      ]
+    },
+    "menu_already_saved": {
+      "DE": [
+        "Du hast bereits einen Alarm gespeichert für diese Menü-Mensa Kombination."
+      ],
+      "EN": [
+        "You have already saved an alert for this mensa-menu combination."
+      ]
+    },
+    "similar_Menu": {
+      "DE": [
+        "In unserer Datenbank wurde ein ähnliches Menü gespeichert, desshalb haben wir deinen Alarm",
+        "für das bereits bekannte Menü gespeichert. Der Alarm wurde also für das Menü '%s' in der Mensa",
+        "'%s' gespeichert."
+      ],
+      "EN": [
+        "A similar menu was found in our database therefore we saved your alert for the already existing menu.",
+        "Your alert was saved for menu '%s' for mensa '%s'."
+      ]
+    },
+    "no_mensa_found": {
+      "DE": [
+        "Es wurde keine passende Mensa gefunden. bitte rufe den /mensa Befehl auf um eine Liste aller unterstützen Mensi",
+        " zu bekommen. Wenn deine Mensa in der Liste enthalen ist dann versuche es nochmals mit dem passenden Namen."
+      ],
+      "EN": [
+        "No matching mensa found in our Database. Please type /mensa to see a list of available mensi.",
+        "If the mensa you meant is in the list please use an appropriate name for it."
+      ]
+    }
+  },
+  "delete_alert": {
+    "no_menu_found": {
+      "DE": [
+        "Not matching menu found in our database. Are you sure you wrote it correctly? (DE)"
+      ],
+      "EN": [
+        "Not matching menu found in our database. Are you sure you wrote it correctly?"
+      ]
+    },
+    "no_mensa_found": {
+      "DE": [
+        "Not matching mensa found in our database. Are you sure you wrote it correctly? (DE)"
+      ],
+      "EN": [
+        "Not matching mensa found in our database. Are you sure you wrote it correctly?"
+      ]
+    },
+    "deleted_alert": {
+      "DE": [
+        "Der Alarm für das Menü '%s' in der Mensa '%s' wurde gelöscht."
+      ],
+      "EN": [
+        "Your alert for menu '%s' for mensa '%s' was deleted."
+      ]
+    },
+    "no_saved_alert": {
+      "DE": [
+        "Es wurde keinen passenden Alarm gefunden, desshalb konnte kein Alarm gelöscht werden."
+      ],
+      "EN": [
+        "No matching alert found, therefore no alert was deleted"
+      ]
+    }
+  },
+  "mensa_list": {
+    "DE": [
+      "Folgende Mensi werden unterstützt: \n"
+    ],
+    "EN": [
+      "The following mensi are supported: \n"
+    ]
+  },
+  "user_not_found": {
+    "DE": [
+      "Du musst zuerst mit /start den Bot starten."
+    ],
+    "EN": [
+      "You first have to start the bot with /start."
+    ]
+  },
+  "admin_only": {
+    "DE": [
+      "Du hast die nötigen Rechte nicht."
+    ],
+    "EN": [
+      "You don't have the rights for this command"
+    ]
+  },
+  "overview": {
+    "DE": [
+      "Für Menü *%s* in Mensa *%s* haben (_%s_) User einen Alarm.\n\n"
+    ],
+    "EN": [
+      "For Menu*%s* at mensa *%s* (_%s_) user have an alert.\n\n"
+    ]
+  },
+  "user_sent_message" : {
+    "DE": [
+      "User (%s) schrieb: '%s'.\n\n"
+    ],
+    "EN": [
+      "User (%s) sent message: '%s'.\n\n"
+    ]
+  }
+}

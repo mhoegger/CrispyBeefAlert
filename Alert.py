@@ -16,8 +16,6 @@ def main():
         config_json = json.load(f)
 
 
-
-
     print("Currenttime: "+str(datetime.datetime.now()))
     config = open("config.txt", "r")
     for line in config:
