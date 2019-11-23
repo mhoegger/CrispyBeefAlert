@@ -129,5 +129,34 @@
     "EN": [
       "User (%s) sent message: '%s'.\n\n"
     ]
-  }
+  },
+  "change_language": {
+    "no_valid_language": {
+          "DE": [
+      "Die gewünschte Sprache wurde nicht erkannt, Bitte gib eine der folgenden Sprachen an indem du die das Kürzel exact sendest.\n\n"
+    ],
+    "EN": [
+      "The language was not recognized, Please select one of the following languages by typing the exact Symbols.\n\n"
+    ]
+    },
+    "already_language": {
+          "DE": [
+      "Deine Sprache ist bereits auf *%s* gesetzt.\n\n"
+    ],
+    "EN": [
+      "Your language is already set to *%s*.\n\n"
+    ]
+    },
+    "changed_language": {
+          "DE": [
+      "Deine Sprache wurde erfolgreich auf *%s* gesetzt.\n\n"
+    ],
+    "EN": [
+      "Your language successfully changed to *%s*.\n\n"
+    ]
+    }
+  },
+  "available_languages": [
+    "DE", "EN"
+  ]
 }

@@ -88,6 +88,12 @@ class DataBaseHandler:
         res = c.fetchall()[0][0]
         return res
 
+    def change_user_language(self, chat_id, language):
+        c = self.conn.cursor()
+        c.execute('''UPDATE users SET language=? WHERE user_id=?;''', (language, chat_id))
+        self.conn.commit()
+
+
     def selectMenus(self) -> list:
         c = self.conn.cursor()
         c.execute('''SELECT menu FROM available_menus''')

@@ -7,7 +7,7 @@ import os
 import datetime
 from fuzzywuzzy import fuzz
 import sqlite3
-from CrispyBeefAlert.DataBaseHandler import DataBaseHandler
+from DataBaseHandler import DataBaseHandler
 
 
 class MenuAlertBot:
@@ -77,7 +77,6 @@ class MenuAlertBot:
         """
         user_language = self.db.get_user_language(chat_id)
 
-
         found_mensi = self.__search_mensa_by_alias(user_mensa)
         if len(found_mensi) > 0:
             found_menu = self.__uniquify_menu(user_menu)
@@ -101,7 +100,6 @@ class MenuAlertBot:
         else:
             # no matching mensa found
             return '\n'.join(self.message_json["save_alert"]["no_mensa_found"][user_language])
-
 
     def delete_alert(self, chat_id: int, user_mensa: str, user_menu: str) -> str:
         """delete the requested menu/mensa alert after checking that the alert was already saved.
@@ -170,7 +168,19 @@ class MenuAlertBot:
         admin_language = self.db.get_user_language(admin_id)
         self.sendMessage('\n'.join(self.message_json["user_sent_message"][admin_language]) % (chat_id, message), admin_id)
 
-    def startBot(self) -> None:
+    def change_language(self, chat_id, message):
+        user_language = self.db.get_user_language(chat_id)
+        if message in self.message_json["available_languages"]:
+            if self.db.get_user_language(chat_id) == message:
+                return '\n'.join(self.message_json["change_language"]["already_language"][user_language]) % message
+            else:
+                self.db.change_user_language(chat_id, message)
+                user_language = self.db.get_user_language(chat_id)
+                return '\n'.join(self.message_json["change_language"]["changed_language"][user_language]) % message
+        else:
+            return'\n'.join([self.message_json["change_language"]["no_valid_language"][user_language], self.message_json["available_languages"]])
+
+    def start_bot(self) -> None:
         """ Booting up the Bot which listens for user interaction
 
         :return: None
@@ -186,6 +196,7 @@ class MenuAlertBot:
         dispatcher.add_handler(CommandHandler("delete", self.delete))
         dispatcher.add_handler(CommandHandler("mensa", self.mensa))
         dispatcher.add_handler(CommandHandler("overview", self.overview))
+        dispatcher.add_handler(CommandHandler("language", self.language))
 
         dispatcher.add_handler(MessageHandler(Filters.command, self.unknown))
 
@@ -310,6 +321,26 @@ class MenuAlertBot:
             parse_mode=telegram.ParseMode.MARKDOWN
         )
 
+    def language(self, bot: telegram.bot.Bot, update: telegram.Update) -> None:
+        """ Change language
+
+        :param bot: Bot
+        :param update: Bot-Update (Message)
+        :return: Nothing
+        """
+        # save message
+        self.save_message(update.message.chat_id, update.message.text)
+
+        if not self.db.is_user_saved(update.message.chat_id):
+            msg = self.message_json["user_not_found"][self.db.get_user_language(update.message.chat_id)]
+        else:
+            msg = self.change_language(update.message.chat_id, update.message.text)
+        bot.send_message(
+            chat_id=update.message.chat_id,
+            text=msg,
+            parse_mode=telegram.ParseMode.MARKDOWN
+        )
+
     def overview(self, bot: telegram.bot.Bot, update: telegram.Update) -> None:
         # save message
         self.save_message(update.message.chat_id, update.message.text)
@@ -359,5 +390,5 @@ class MenuAlertBot:
 
 if __name__ == '__main__':
     AlertBot = MenuAlertBot("./config.json")
-    AlertBot.startBot()
+    AlertBot.start_bot()
     print("Bot has booted up")
