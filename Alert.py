@@ -9,37 +9,16 @@ from fuzzywuzzy import fuzz
 from Scrape import ETHMenu, UZHMenu
 import Bot as bot
 import datetime
+from DataBaseHandler import DataBaseHandler
 
 
 def main():
     with open('config.json') as f:
         config_json = json.load(f)
+    token = config_json["token"]
 
-
-    print("Currenttime: "+str(datetime.datetime.now()))
-    config = open("config.txt", "r")
-    for line in config:
-        if line.startswith("TOKEN"):
-            token = str(line.split("TOKEN: ")[1].rstrip())
-        if line.startswith("JSONPATH:"):
-            path = line.split("JSONPATH: ")[1].rstrip()
-        if line.startswith("ADMIN_CHAT:"):
-            admin_chat = line.split("ADMIN_CHAT: ")[1].rstrip()
-
-    # Read path to storage of database JSON (db.json)
-    print("Main")
-    config = open("config.txt", "r")
-    for line in config:
-        if line.startswith("JSONPATH:"):
-            path = line.split("JSONPATH: ")[1]
-
-    #create Json if not existing yet.
-    if not(os.path.exists(path)):
-        with open(path, 'w') as jsonFile:
-            dict = {}
-            dict["lastUpdate"] = str(datetime.datetime.now())
-            print(dict)
-            json.dump(dict, jsonFile)
+    db_file = config_json["db_path"]
+    db = DataBaseHandler(db_file)
 
     # scrape menues
     today = datetime.datetime.today().date()
@@ -48,6 +27,37 @@ def main():
     elif today.weekday() == 6: # if saturnday
         today = today + datetime.timedelta(days=1)
 
+
+    # get all supportet universities
+    universities = db.get_universities()
+
+    # scrape instances:
+    scrapers = {
+        "UZH_Mensa": UZHMenu(),
+        "ETH_Mensa": ETHMenu()
+    }
+
+    for uni in universities:
+        uni_scraper = scrapers[uni]
+        mensi = db.get_mensainfo_by_uni(uni)
+        for mensa_name,mensa_id in mensi:
+            date_to_scrape, days_to_alert = uni_scraper.get_dates_to_scrape()
+            #print(mensa_name)
+            #print(date_to_scrape.date())
+            #print(days_to_alert)
+            res = uni_scraper.scrape(date_to_scrape.date(), mensa_id)
+            print(res)
+            is_weekday = False
+            if (len(days_to_alert) == 3):
+                # is_weekday
+                for day in days_to_alert:
+                    day_rel = uni_scraper.getDayRelation(day)
+                    menu = res[1][day]
+                    print(day_rel)
+                    print(menu)
+
+
+    """
     InstMenus=[UZHMenu(),ETHMenu()]
     for newMenu in InstMenus:
     #newMenu = ETHMenu()
@@ -100,7 +110,7 @@ def main():
                                         print(token)
                                         for singleID in chatId:
                                             bot.sendMessage(msg,singleID,token=token)
-
+    """
 
 
 

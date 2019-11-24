@@ -1,7 +1,7 @@
 import sqlite3
 import json
 import os
-from CrispyBeefAlert.DataBaseHandler import DataBaseHandler
+from DataBaseHandler import DataBaseHandler
 
 
 class Setup:

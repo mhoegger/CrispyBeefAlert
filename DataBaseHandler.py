@@ -128,6 +128,17 @@ class DataBaseHandler:
         print(res)
         return list
 
+    def get_mensainfo_by_uni(self, uni) -> list:
+        c = self.conn.cursor()
+        c.execute('''SELECT mensa, online FROM available_mensa 
+                    WHERE university = (?)''', (uni,))
+        res = c.fetchall()
+        list = []
+        for entry in res:
+            list.append(entry)
+        print(res)
+        return list
+
     def write_message(self, chat_id: int, message: str):
         """ Save message to the database
 

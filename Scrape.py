@@ -1,7 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 import re
-import datetime
+from datetime import datetime, timedelta
 import json
 
 class Menu:
@@ -24,7 +24,7 @@ class Menu:
 
     def getDayRelation(self, menuWeekDay):
         relations = "notFound"
-        todaysWeekday = datetime.datetime.today().weekday()
+        todaysWeekday = datetime.today().weekday()
         if menuWeekDay == todaysWeekday:
             relations = "Today"
         elif menuWeekDay - todaysWeekday > 0 and menuWeekDay - todaysWeekday == 1:
@@ -40,6 +40,20 @@ class Menu:
         return relations
         #print(todaysWeekday)ddd
 
+    def get_dates_to_scrape(self):
+        today = datetime.today()+timedelta(days=1)
+        if today.weekday() == 5:
+            # if today is saturday
+            return today + timedelta(days=2), [0, 1, 2, 3, 4]
+        elif today.weekday() == 6:
+            # if today is saturday
+            return today + timedelta(days=1), [0, 1, 2, 3, 4]
+        else:
+
+            return today, list(range(today.weekday(),today.weekday()+3))
+
+
+
 class ETHMenu(Menu):
     """ Class to handle the ETH menu plans
 
@@ -48,15 +62,12 @@ class ETHMenu(Menu):
     :type path_to_json: Path or String
     """
 
-    def __init__(self, path_to_json):
+    def __init__(self):
         """constructor method
 
         set the base url from where the menus should be scraped from
         """
         super().__init__()
-        with open(path_to_json) as f:
-            ETH_json = json.load(f)
-        self.MensaDict = ETH_json
         self.baseUrl = "https://www.ethz.ch/de/campus/erleben/gastronomie-und-einkaufen/gastronomie/menueplaene/offerWeek.html"
 
     def scrape(self, date, id):
@@ -101,15 +112,12 @@ class UZHMenu(Menu):
     :type path_to_json: Path or String
     """
 
-    def __init__(self, path_to_json):
+    def __init__(self):
         """constructor method
 
         set the base url from where the menus should be scraped from
         """
         super().__init__()
-        with open(path_to_json) as f:
-            UZH_json = json.load(f)
-        self.MensaDict = UZH_json
         self.baseUrl = "https://www.mensa.uzh.ch/de/menueplaene/"
 
     def scrape(self, date, id):
