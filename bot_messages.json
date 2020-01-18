@@ -156,6 +156,62 @@
     ]
     }
   },
+  "alert": {
+    "Today": {
+      "DE": [
+        "*Heute* gibt es *%s* in der mensa *%s*.\n\n"
+      ],
+      "EN": [
+        "*Today* the menu *%s* is served at the mensa *%s*.\n\n"
+      ]
+    },
+    "Tomorrow": {
+      "DE": [
+        "*Morgen* gibt es *%s* in der mensa *%s*.\n\n"
+      ],
+      "EN": [
+        "*Tomorrow* the menu *%s* is served at the mensa *%s*.\n\n"
+      ]
+    },
+    "Day after Tomorrow": {
+      "DE": [
+        "*Übermorgen* gibt es *%s* in der mensa *%s*.\n\n"
+      ],
+      "EN": [
+        "*Day after tomorrow* the menu *%s* is served at the mensa *%s*.\n\n"
+      ]
+    },
+    "generic_day": {
+      "DE": [
+        "Am *%s* gibt es *%s* in der mensa *%s*.\n\n"
+      ],
+      "EN": [
+        "On *%s* the menu *%s* is served at the mensa *%s*.\n\n"
+      ]
+    }
+  },
+  "days": {
+    "0": {
+      "DE": "Montag",
+      "EN": "monday"
+    },
+    "1": {
+      "DE": "Dienstag",
+      "EN": "tuesday"
+    },
+    "2": {
+      "DE": "Mittwoch",
+      "EN": "wednesday"
+    },
+    "3": {
+      "DE": "Donnerstag",
+      "EN": "thursday"
+    },
+    "4": {
+      "DE": "Freitag",
+      "EN": "friday"
+    }
+  },
   "available_languages": [
     "DE", "EN"
   ]

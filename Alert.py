@@ -2,12 +2,13 @@
 
 
 # Script to handle subscribed user and their requested menus
+import telegram
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, RegexHandler, ConversationHandler
 import os
 import json
 import datetime
 from fuzzywuzzy import fuzz
 from Scrape import ETHMenu, UZHMenu
-import Bot as bot
 import datetime
 from DataBaseHandler import DataBaseHandler
 
@@ -28,6 +29,10 @@ def main():
         today = today + datetime.timedelta(days=1)
 
 
+    # read in bot message
+    with open(config_json["message_json"]) as f:
+        message_json = json.load(f)
+
     # get all supportet universities
     universities = db.get_universities()
 
@@ -37,6 +42,8 @@ def main():
         "ETH_Mensa": ETHMenu()
     }
 
+    bot = telegram.Bot(token=config_json["token"])
+
     for uni in universities:
         uni_scraper = scrapers[uni]
         mensi = db.get_mensainfo_by_uni(uni)
@@ -45,17 +52,53 @@ def main():
             #print(mensa_name)
             #print(date_to_scrape.date())
             #print(days_to_alert)
-            res = uni_scraper.scrape(date_to_scrape.date(), mensa_id)
-            print(res)
-            is_weekday = False
+            print(date_to_scrape.date())
+            status, menus_week = uni_scraper.scrape(date_to_scrape.date(), mensa_id)
+            if status != "success":
+                continue
+            #print(status)
+            #print(menus)
             if (len(days_to_alert) == 3):
                 # is_weekday
                 for day in days_to_alert:
                     day_rel = uni_scraper.getDayRelation(day)
-                    menu = res[1][day]
-                    print(day_rel)
-                    print(menu)
-
+                    print(menus_week)
+                    menus = menus_week[day]
+                    for menu in menus:
+                        all_alert_menus = db.selectMenus()
+                        for alert_menu in all_alert_menus:
+                            Token_Set_Ratio = fuzz.token_set_ratio(alert_menu, menu)
+                            print(menu)
+                            print(Token_Set_Ratio)
+                            if Token_Set_Ratio > 95:
+                                alert_user_list = db.get_useralert_by_mensa_and_menu(mensa_name, alert_menu)
+                                for alert_user in alert_user_list:
+                                    lang = db.get_user_language(alert_user)
+                                    msg = '\n'.join(message_json["alert"][day_rel][lang]) % (menu, mensa_name)
+                                    bot.sendMessage(chat_id=alert_user, text=msg, parse_mode=telegram.ParseMode.MARKDOWN)
+                            #print(menu)
+            else:
+                # is weekend
+                if uni == "UZH_Mensa":
+                    # No alerts for UZH at weekend since menus not online for next week.
+                    continue
+                for day in days_to_alert:
+                    menus = menus_week[day]
+                    for menu in menus:
+                        all_alert_menus = db.selectMenus()
+                        for alert_menu in all_alert_menus:
+                            Token_Set_Ratio = fuzz.token_set_ratio(alert_menu, menu)
+                            print(menu)
+                            print(Token_Set_Ratio)
+                            if Token_Set_Ratio > 95:
+                                print(mensa_name)
+                                print(alert_menu)
+                                alert_user_list = db.get_useralert_by_mensa_and_menu(mensa_name, alert_menu)
+                                print(alert_user_list)
+                                for alert_user in alert_user_list:
+                                    lang = db.get_user_language(alert_user)
+                                    msg = '\n'.join(message_json["alert"]["generic_day"][lang]) % (message_json["days"][str(day)][lang], menu, mensa_name)
+                                    bot.sendMessage(chat_id=alert_user, text=msg, parse_mode=telegram.ParseMode.MARKDOWN)
 
     """
     InstMenus=[UZHMenu(),ETHMenu()]
@@ -113,6 +156,6 @@ def main():
     """
 
 
-
 if __name__ == '__main__':
     main()
+

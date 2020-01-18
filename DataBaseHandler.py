@@ -139,6 +139,19 @@ class DataBaseHandler:
         print(res)
         return list
 
+    def get_useralert_by_mensa_and_menu(self, mensa, menu) -> list:
+        c = self.conn.cursor()
+        c.execute('''SELECT user_id FROM saved_alerts 
+                    WHERE mensa = (?) AND menu = (?)''', (mensa, menu))
+        res = c.fetchall()
+        list = []
+        for entry in res:
+            list.append(entry[0])
+        print(res)
+        return list
+
+
+
     def write_message(self, chat_id: int, message: str):
         """ Save message to the database
 

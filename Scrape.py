@@ -89,6 +89,8 @@ class ETHMenu(Menu):
         number_of_days = 5
 
         try:
+            if not menu_div:
+                return "Error: no div", [["-"], ["-"], ["-"], ["-"], ["-"]]
             menus = menu_div.find_all("tr")
             del menus[::2]  # The menus are only in every second "tr", so delete the others
             menu_names = [[] for _ in range(number_of_days)]
@@ -97,6 +99,7 @@ class ETHMenu(Menu):
                 for k, men in enumerate(menues[1:6]):  # skip first one because it tells the weekday
                     menu_names[k].append((re.search(r'<td>(.*?)</td>', str(men).replace("<h3>", "**").
                                            replace("</h3>", "** ")).group(1)).replace("<br/>", " "))
+            print(menu_names[0:5])
             return "success", menu_names[0:5]
 
         except RuntimeError as e:
