@@ -13,6 +13,11 @@ class Menu:
         self.baseUrl = {}
 
     def scrapeAll(self, date):
+        """ method to scrape over all saved menu on the given date
+
+        :param date: date of the day for which the menu should be scraped
+        :return: dictionary containing all menus for all the mensi
+        """
         dict_over_mensi = {}
         for key in self.MensaDict:
             dict_over_mensi[str(self.MensaDict[key]["id"])] = self.scrape(date, str(self.MensaDict[key]["id"]))
@@ -22,35 +27,6 @@ class Menu:
     def scrape(self, date, id):
         return None
 
-    def getDayRelation(self, menuWeekDay):
-        relations = "notFound"
-        todaysWeekday = datetime.today().weekday()
-        if menuWeekDay == todaysWeekday:
-            relations = "Today"
-        elif menuWeekDay - todaysWeekday > 0 and menuWeekDay - todaysWeekday == 1:
-            relations = "Tomorrow"
-        elif menuWeekDay - todaysWeekday < 0 and (menuWeekDay+7) - todaysWeekday == 1:
-            relations = "Tomorrow"
-        elif menuWeekDay - todaysWeekday > 0 and menuWeekDay - todaysWeekday == 2:
-            relations = "Day after Tomorrow"
-        elif menuWeekDay - todaysWeekday < 0 and (menuWeekDay + 7) - todaysWeekday == 2:
-            relations = "Day after Tomorrow"
-        else:
-            relations = menuWeekDay
-        return relations
-        #print(todaysWeekday)ddd
-
-    def get_dates_to_scrape(self):
-        today = datetime.today()+timedelta(days=1)
-        if today.weekday() == 5:
-            # if today is saturday
-            return today + timedelta(days=2), [0, 1, 2, 3, 4]
-        elif today.weekday() == 6:
-            # if today is saturday
-            return today + timedelta(days=1), [0, 1, 2, 3, 4]
-        else:
-
-            return today, list(range(today.weekday(),today.weekday()+3))
 
 
 
@@ -87,6 +63,7 @@ class ETHMenu(Menu):
             url, params=payload, headers={'User-Agent': 'Mozilla/5.0'}).text
         menu_div = BeautifulSoup(http, "html.parser").find("div",{"class":"table-matrix meals"})
         number_of_days = 5
+        number_of_menus = 4
 
         try:
             if not menu_div:
@@ -94,10 +71,12 @@ class ETHMenu(Menu):
             menus = menu_div.find_all("tr")
             del menus[::2]  # The menus are only in every second "tr", so delete the others
             menu_names = [[] for _ in range(number_of_days)]
-            for day_menu in menus[:-1]:  # iterate over the different weekdays
-                menues = day_menu.find_all("td")
-                for k, men in enumerate(menues[1:6]):  # skip first one because it tells the weekday
-                    menu_names[k].append((re.search(r'<td>(.*?)</td>', str(men).replace("<h3>", "**").
+            for day, day_menu in enumerate(menus):  # iterate over the different weekdays
+                columns = day_menu.find_all("td")
+                #print("columns", columns)
+                for k, men in enumerate(columns[1:number_of_menus+1]):  # skip first one because it tells the weekday
+                    print("men", men, "\n")
+                    menu_names[day].append((re.search(r'<td>(.*?)</td>', str(men).replace("<h3>", "**").
                                            replace("</h3>", "** ")).group(1)).replace("<br/>", " "))
             print(menu_names[0:5])
             return "success", menu_names[0:5]
@@ -166,5 +145,7 @@ class UZHMenu(Menu):
 
 
 if __name__ == "__main__":
-    newMenu = ETHMenu('ETH_Mensa.json')
-    print(newMenu.scrape("2019-10-19",4))
+    UZHnewMenu = UZHMenu()
+    ETHnewMenu = ETHMenu()
+    print(ETHnewMenu.scrape("2020-01-27", 4))
+    # print(UZHnewMenu.scrape("2020-1-24","mensa-uzh-binzmuehle"))

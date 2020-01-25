@@ -190,6 +190,14 @@
       ]
     }
   },
+  "failed_scrping": {
+    "DE": [
+        "Error während Scraping der Mensa *%s* von der Uni *%s*.\n\n"
+      ],
+      "EN": [
+        "Scraping failed for Mensa *%s* of the Institution *%s*.\n\n"
+      ]
+  },
   "days": {
     "0": {
       "DE": "Montag",
