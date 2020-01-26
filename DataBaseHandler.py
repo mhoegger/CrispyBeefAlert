@@ -9,7 +9,7 @@ class DataBaseHandler:
             self.conn = sqlite3.connect(db_file, check_same_thread=False)
         except RuntimeError as e:
             print(e)
-        self.default_language = "EN"
+        self.default_language = "DE"
 
     def writeMenu(self, user_menu: str) -> None:
         """ Saves a menu string into the list of already saved menus.

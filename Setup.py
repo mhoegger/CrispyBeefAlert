@@ -55,6 +55,8 @@ class Setup:
                 for menu in menus:
                     for user_id in value_dict[menu]:
                         self.db.write_alert(user_id, mensa_name, menu)
+                        if not self.db.is_user_saved(user_id):
+                            self.db.write_user(user_id)
         except e:
             print(e)
             print("no previous data loaded.")
