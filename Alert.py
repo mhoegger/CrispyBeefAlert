@@ -142,12 +142,16 @@ class MenuAlert:
             uni_scraper = self.scrapers[uni]
             # get all the mensi from the Database
             mensi = self.db.get_mensainfo_by_uni(uni)
+            print("mensi", mensi)
             # for all mensi get their name and id for, iterate over all the mensi of that institution
             for mensa_name, mensa_id in mensi:
                 # get the dates which should be scraped for (dependent on today)
                 date_to_scrape, days_to_alert = self.get_dates_to_scrape()
                 # scrape the menus for the mensa and the scrape-day (always get the whole week of menus
                 status, menus_week = uni_scraper.scrape(date_to_scrape.date(), mensa_id)
+                print("status", status)
+                print("menus_week", menus_week)
+
                 # end loop is scraping was not successful
                 if status != "success":
                     self.send_message_to_admin(mensa_name, uni)
