@@ -150,6 +150,13 @@ class DataBaseHandler:
         print(res)
         return list
 
+    def get_mensa_by_online_id(self, online) -> str:
+        c = self.conn.cursor()
+        c.execute('''SELECT mensa FROM available_mensa
+                    WHERE online = (?)''', (online,))
+        res = c.fetchall()[0][0]
+        return res
+
 
 
     def write_message(self, chat_id: int, message: str):

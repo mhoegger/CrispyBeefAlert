@@ -41,6 +41,25 @@ class Setup:
                         print("already saved")
         self.conn.commit()
 
+        # load previous data
+        try:
+            with open(self.config_json["json_path"]) as f:
+                self.json_db = json.load(f)
+            key_list = [*self.json_db]
+            print("key_list",key_list)
+            key_list.remove("lastUpdate")
+            for mensa_dict_key in key_list:
+                value_dict = self.json_db[mensa_dict_key]
+                menus = [*value_dict]
+                mensa_name = self.db.get_mensa_by_online_id(mensa_dict_key)
+                for menu in menus:
+                    for user_id in value_dict[menu]:
+                        self.db.write_alert(user_id, mensa_name, menu)
+        except e:
+            print(e)
+            print("no previous data loaded.")
+
+
 if __name__ == "__main__":
     setup = Setup("./config.json", ["./ETH_Mensa.json", "./UZH_Mensa.json"])
 
