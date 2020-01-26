@@ -2,7 +2,7 @@ import sqlite3
 import json
 import os
 from DataBaseHandler import DataBaseHandler
-
+from Bot import MenuAlertBot
 
 class Setup:
     def __init__(self, configfile: str, list_of_mensa_json: str):
@@ -43,6 +43,7 @@ class Setup:
 
         # load previous data
         try:
+            AlertBot = MenuAlertBot("./config.json")
             with open(self.config_json["json_path"]) as f:
                 self.json_db = json.load(f)
             key_list = [*self.json_db]
@@ -54,9 +55,12 @@ class Setup:
                 mensa_name = self.db.get_mensa_by_online_id(mensa_dict_key)
                 for menu in menus:
                     for user_id in value_dict[menu]:
-                        self.db.write_alert(user_id, mensa_name, menu)
                         if not self.db.is_user_saved(user_id):
                             self.db.write_user(user_id)
+                        AlertBot.save_alert(user_id, mensa_name, menu)
+                        #self.db.write_alert(user_id, mensa_name, menu)
+                        #if not self.db.is_user_saved(user_id):
+                            #self.db.write_user(user_id)
         except e:
             print(e)
             print("no previous data loaded.")
