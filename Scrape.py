@@ -1,138 +1,149 @@
 import requests
 from bs4 import BeautifulSoup
 import re
-import datetime
+from datetime import datetime, timedelta
+import json
 
+class Menu:
+    """Class to define the overall structure of a Menu that should be scraped
 
-class Menu():
-
+    """
     def __init__(self):
         self.MensaDict = {}
         self.baseUrl = {}
 
     def scrapeAll(self, date):
-        dict = {}
-        for name, id in self.MensaDict.items():
-            mensaMenu = self.scrape(date, str(id))
-            dict[str(id)]=mensaMenu
-            #print(dict)
-        return dict
+        """ method to scrape over all saved menu on the given date
+
+        :param date: date of the day for which the menu should be scraped
+        :return: dictionary containing all menus for all the mensi
+        """
+        dict_over_mensi = {}
+        for key in self.MensaDict:
+            dict_over_mensi[str(self.MensaDict[key]["id"])] = self.scrape(date, str(self.MensaDict[key]["id"]))
+        return dict_over_mensi
 
 
     def scrape(self, date, id):
         return None
 
-    def getDayRelation(self, menuWeekDay):
-        relations = "notFound"
-        todaysWeekday = datetime.datetime.today().weekday()
-        if menuWeekDay == todaysWeekday:
-            relations = "Today"
-        elif menuWeekDay - todaysWeekday > 0 and menuWeekDay - todaysWeekday == 1:
-            relations = "Tomorrow"
-        elif menuWeekDay - todaysWeekday < 0 and (menuWeekDay+7) - todaysWeekday == 1:
-            relations = "Tomorrow"
-        elif menuWeekDay - todaysWeekday > 0 and menuWeekDay - todaysWeekday == 2:
-            relations = "Day after Tomorrow"
-        elif menuWeekDay - todaysWeekday < 0 and (menuWeekDay + 7) - todaysWeekday == 2:
-            relations = "Day after Tomorrow"
-        else:
-            relations = menuWeekDay
-        return relations
-        #print(todaysWeekday)ddd
+
+
 
 class ETHMenu(Menu):
+    """ Class to handle the ETH menu plans
 
+    :param path_to_json: path to the JSON file where the different mensi are described with id (which is used in the
+    url) and some alias names which might be used by the users.
+    :type path_to_json: Path or String
+    """
 
     def __init__(self):
-        self.MensaDict = {"Clausiusbar": 4, "Dozentenfoyer": 6, "food&lab": 28, "Foodtrailer": 9, "G-ESSbar": 11,
-                    "Polyterrasse": 12, "Polysnack": 13, "Tannenbar": 14}
+        """constructor method
+
+        set the base url from where the menus should be scraped from
+        """
+        super().__init__()
         self.baseUrl = "https://www.ethz.ch/de/campus/erleben/gastronomie-und-einkaufen/gastronomie/menueplaene/offerWeek.html"
 
     def scrape(self, date, id):
+        """Scrapes the website of the ETH to get the menus for each day and for each mensa.
+
+        :param date: date of the date where the menu should be fetched for
+        :type date: Date: YYYY-MM-DD
+        :param id: ID of the mensa for with the menu should be fetched
+        :type id: Integer
+
+        :return: Status, Menus
+        :rtype: String, List of Strings
+        """
         url = self.baseUrl
         payload = {"language": 'de', "date": date, "id": id}
         http = requests.get(
             url, params=payload, headers={'User-Agent': 'Mozilla/5.0'}).text
-        menuDiv = BeautifulSoup(http, "html.parser").find("div",{"class":"table-matrix meals"})
-        # 0th column is for menu Type, 1st for Monday, 2nd for Tuesday ...
-        #print(menuDiv)
-        try:
-            menus = menuDiv.find_all("tr")
-            #print(menus)
-            del menus[::2]
-            #print(menus)
-            #print(menus)
+        menu_div = BeautifulSoup(http, "html.parser").find("div",{"class":"table-matrix meals"})
+        number_of_days = 5
+        number_of_menus = 4
 
-            menuNames = [ [] for i in range(5) ]
-            print(menuNames)
-            for day in menus[:-1]:
-                #print(day)
-                #perDay = []
-                #menuNames.append(perDay)
-                menues = day.find_all("td")
-                for k, men in enumerate(menues[1:6]):
-                    menuNames[k].append((re.search(r'<td>(.*?)</td>', str(men)).group(1)).replace("<br/>", " "))
-            print(menuNames[0:5])
-            return menuNames[0:5]
-        except:
-            return[["-"],["-"],["-"],["-"],["-"]]
-            #menuDescriptions[n] = re.search(r'<p>\s+(.*?) <br/><br/>', str(menuDescriptions[n])).group(1)
+        try:
+            if not menu_div:
+                return "Error: no div", [["-"], ["-"], ["-"], ["-"], ["-"]]
+            menus = menu_div.find_all("tr")
+            del menus[::2]  # The menus are only in every second "tr", so delete the others
+            menu_names = [[] for _ in range(number_of_days)]
+            for day, day_menu in enumerate(menus):  # iterate over the different weekdays
+                columns = day_menu.find_all("td")
+                #print("columns", columns)
+                for k, men in enumerate(columns[1:number_of_menus+1]):  # skip first one because it tells the weekday
+                    menu_names[day].append((re.search(r'<td>(.*?)</td>', str(men).replace("<h3>", "**").
+                                           replace("</h3>", "** ")).group(1)).replace("<br/>", " "))
+            return "success", menu_names[0:5]
+
+        except RuntimeError as e:
+            print("Error: "+str(e))
+            return str(e), [["-"], ["-"], ["-"], ["-"], ["-"]]
 
 
 class UZHMenu(Menu):
+    """ Class to handle the UZH menu plans
+
+    :param path_to_json: path to the JSON file where the different mensi are described with id (which is used in the
+    url) and some alias names which might be used by the users.
+    :type path_to_json: Path or String
+    """
 
     def __init__(self):
-        #super.__init__(UZHMensa, UZHBaseUrl)
-        self.MensaDict = {"Mercato UZH Zentrum": "zentrum-mercato", "Mercato UZH Zentrum Abend": "zentrum-mercato-abend",
-                         "Mensa UZH Zentrum": "zentrum-mensa", "Mensa UZH Zentrum Lichthof Rondell": "lichthof-rondell",
-                         "Mensa UZH Irchel": "mensa-uzh-irchel",
-                         "Cafeteria UZH Irchel Atrium": "irchel-cafeteria-atrium",
-                         "Cafeteria UZH Irchel Seerose": "irchel-cafeteria-seerose-mittag",
-                         "Cafeteria UZH Irchel Seerose": "irchel-cafeteria-seerose-abend",
-                         "Mensa UZH Binzmühle": "mensa-uzh-binzmuehle", "Cafeteria UZH Cityport": "mensa-uzh-cityport",
-                         "Rämi 59": "raemi59", "Cafeteria Zentrum für Zahnmedizin (ZZM)": "cafeteria-zzm",
-                         "Cafeteria UZH Tierspital": "cafeteria-uzh-tierspital",
-                         "Cafeteria UZH Botanischer Garten": "cafeteria-uzh-botgarten",
-                         "Cafeteria UZH Plattenstrasse": "cafeteria-uzh-plattenstrasse"}
+        """constructor method
+
+        set the base url from where the menus should be scraped from
+        """
+        super().__init__()
         self.baseUrl = "https://www.mensa.uzh.ch/de/menueplaene/"
 
     def scrape(self, date, id):
-        allDays=["montag", "dienstag", "mittwoch", "donnerstag", "freitag"]
-        baseurl = self.baseUrl+id+"/"
+        """Scrapes the website of the UZH to get the menus for each day and for each mensa.
+
+        :param date: date of the date where the menu should be fetched for
+        :type date: Date: YYYY-MM-DD
+        :param id: ID of the mensa for with the menu should be fetched
+        :type id: Integer
+
+        :return: Status, Menus
+        :rtype: String, List of Strings
+        """
+        day_strings = ["montag", "dienstag", "mittwoch", "donnerstag", "freitag"]
+        base_url = self.baseUrl+id+"/"
         payload = {}
-        allDaysMenus = []
-        #for i in range(len(allDays)):
-        for day in allDays:
-            #day=allDays[i]
-            url=baseurl+str(day)+".html"
-            print(url)
+        all_days_menus = []
+        errors = ""
+        for day in day_strings:
+            url = base_url+str(day)+".html"
             http = requests.get(
                 url, params=payload, headers={'User-Agent': 'Mozilla/5.0'}).text
-            #print(http)
-            menuDiv = BeautifulSoup(http, "html.parser").find("div", {"class": "newslist-description"})
-            # 0th column is for menu Type, 1st for Monday, 2nd for Tuesday ...
-            #print(menuDiv)
+            menu_div = BeautifulSoup(http, "html.parser").find("div", {"class": "newslist-description"})
             try:
-                menuNames = menuDiv.find_all("h3")
-                #print(menuNames)
-                menusDescr = menuDiv.find_all("p")[0::2]
-                #print(len(menuNames))
-                #(len(menusDescr))
-                menuString=[]
-                if len(menuNames) == len(menusDescr):
-                    for i in range(len(menuNames)):
-                        #print("-------------"+str(i))
-                        menuString.append(str(menuNames[i]).replace("<h3>","")
-                                          .replace("</h3>","").replace("<span>","").replace("</span>","")
-                                          +"\n"+str(menusDescr[i]).replace("<p>","").replace("</p>","").replace("<br/>",""))
-                allDaysMenus.append(menuString)
-                #print(allDaysMenus)
-            except:
-                print("FAILED to find h3 ot p")
-        return allDaysMenus
-        # menuDescriptions[n] = re.search(r'<p>\s+(.*?) <br/><br/>', str(menuDescriptions[n])).group(1)
+                menu_names = menu_div.find_all("h3")
+                menus_description = menu_div.find_all("p")[0::2]
+                menu_string = []
+                if len(menu_names) == len(menus_description):
+                    for i in range(len(menu_names)):
+                        menu_string.append(str(menu_names[i]).replace("<h3>", "").
+                                           replace("</h3>", "").replace("<span>", "").replace("</span>", "") +
+                                           "\n"+str(menus_description[i]).replace("<p>", "").replace("</p>", "").
+                                           replace("<br/>", ""))
+                all_days_menus.append(menu_string)
+            except RuntimeError as e:
+                errors += str(e) + ", "
+                all_days_menus.append(" - ")
+
+        if errors == "":
+            return "success", all_days_menus
+        else:
+            return errors, all_days_menus
 
 
 if __name__ == "__main__":
-    newMenu = ETHMenu()
-    newMenu.scrape("2019-04-19",4)
+    UZHnewMenu = UZHMenu()
+    ETHnewMenu = ETHMenu()
+    print(ETHnewMenu.scrape("2020-01-27", 4))
+    # print(UZHnewMenu.scrape("2020-1-24","mensa-uzh-binzmuehle"))

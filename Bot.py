@@ -6,47 +6,12 @@ import json
 import os
 import datetime
 from fuzzywuzzy import fuzz
+import sqlite3
+from DataBaseHandler import DataBaseHandler
 
 
 class MenuAlertBot:
-    def __init__(self):
-        self.TOKEN = None
-        self.JSONPATH = None
-        self.MENSA = {"Clausiusbar": 4, "Dozentenfoyer": 6, "food&lab": 28, "Foodtrailer": 9, "G-ESSbar": 11,
-            "Polyterrasse": 12, "Polysnack": 13, "Tannenbar": 14, "Mercato UZH Zentrum": "zentrum-mercato",
-            "Mercato UZH Zentrum Abend": "zentrum-mercato-abend",
-            "Mensa UZH Zentrum": "zentrum-mensa", "Mensa UZH Zentrum Lichthof Rondell": "lichthof-rondell",
-            "Mensa UZH Irchel": "mensa-uzh-irchel", "Cafeteria UZH Irchel Atrium": "irchel-cafeteria-atrium",
-            "Cafeteria UZH Irchel Seerose": "irchel-cafeteria-seerose-mittag",
-            "Cafeteria UZH Irchel Seerose": "irchel-cafeteria-seerose-abend",
-            "Mensa UZH Binzmühle": "mensa-uzh-binzmuehle", "Cafeteria UZH Cityport": "mensa-uzh-cityport",
-            "Rämi 59": "raemi59", "Cafeteria Zentrum für Zahnmedizin (ZZM)": "cafeteria-zzm",
-            "Cafeteria UZH Tierspital": "cafeteria-uzh-tierspital",
-            "Cafeteria UZH Botanischer Garten": "cafeteria-uzh-botgarten",
-            "Cafeteria UZH Plattenstrasse": "cafeteria-uzh-plattenstrasse"}
-        self.MENSA_ALIAS = {
-            "Clausiusbar": ["Clausiusbar", "AsiaMensa", "Clausius"],
-            "Dozentenfoyer": ["Dozentenfoyer"],
-            "food&lab": ["food&lab"],
-            "Foodtrailer": ["Foodtrailer", "Imbissstand"],
-            "G-ESSbar": ["G-ESSbar", "GESS"],
-            "Polyterrasse": ["Polyterrasse", "Poly", "ETHMensa"],
-            "Polysnack": ["Polysnack"],
-            "Tannenbar": ["Tannenbar"],
-            "Mercato UZH Zentrum": ["Mercato UZH Zentrum", "Untere Mensa", "Uni Mensa"],
-            "Mercato UZH Zentrum Abend": ["Mercato UZH Zentrum Abend", "Uni Mensa Abend"],
-            "Mensa UZH Zentrum": ["Mensa UZH Zentrum", "Obere Mensa"],
-            "Mensa UZH Zentrum Lichthof Rondell": ["Mensa UZH Zentrum Lichthof Rondell", "Liechthof", "Rondell"],
-            "Mensa UZH Irchel": ["Mensa UZH Irchel", "Irchel"],
-            "Cafeteria UZH Irchel Atrium": ["Cafeteria UZH Irchel Atrium", "Atrium"],
-            "Cafeteria UZH Irchel Seerose": ["Cafeteria UZH Irchel Seerose", "Seerose"],
-            "Mensa UZH Binzmühle": ["Mensa UZH Binzmühle", "Binz"],
-            "Cafeteria UZH Cityport": ["Cafeteria UZH Cityport", "Cityport"],
-            "Rämi 59": ["Rämi 59", "rämi"],
-            "Cafeteria Zentrum für Zahnmedizin (ZZM)": ["Cafeteria Zentrum für Zahnmedizin (ZZM)", "ZZM"],
-            "Cafeteria UZH Tierspital": ["Cafeteria UZH Tierspital", "Tierspital"],
-            "Cafeteria UZH Botanischer Garten": ["Cafeteria UZH Botanischer Garten", "Botanischer Garten"],
-            "Cafeteria UZH Plattenstrasse": ["Cafeteria UZH Plattenstrasse", "Plattenstrasse", "BWL"]}
+    def __init__(self, configfile: str):
 
         # Log messages to the server to get insights about user activities beside the print statements
         logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -58,26 +23,169 @@ class MenuAlertBot:
         fh.setLevel(logging.DEBUG)
         self.logger.addHandler(fh)
 
-    def setConfig(self, configfile: str) -> None:
-        # Read my personal bot token out of the token.txt file which is not uploaded to github, and hand it to the updater.
-        config = open(configfile, "r")
-        for line in config:
-            if line.startswith("TOKEN"):
-                self.TOKEN = line.split("TOKEN: ")[1].rstrip()
-            if line.startswith("JSONPATH:"):
-                self.JSONPATH = line.split("JSONPATH: ")[1].rstrip()
+        # read in config json
+        with open(configfile) as f:
+            self.config_json = json.load(f)
 
-    def validateConfig(self) -> bool:
-        valid = True
-        if self.TOKEN is None:
-            print("TOKeN NOT set")
-            valid = False
-        elif self.JSONPATH is None:
-            print("JSONPATH NOT set")
-        return valid
+        # read in bot message
+        with open(self.config_json["message_json"]) as f:
+            self.message_json = json.load(f)
+        # Create DataBase
+        db_file = self.config_json["db_path"]
+        """
+        
+        try:
+            self.conn = sqlite3.connect(db_file, check_same_thread=False)
+        except RuntimeError as e:
+            print(e)
+        """
+        self.db = DataBaseHandler(db_file)
 
-    def startBot(self) -> None:
-        updater = Updater(self.TOKEN)
+    def __uniquify_menu(self, user_menu: str) -> str:
+        max_score = 0
+        found_menu = None
+        for db_menu in self.db.selectMenus():
+            print("db_menu", db_menu)
+            score = fuzz.token_set_ratio(db_menu, user_menu)
+            print("score", score)
+            if score > 50 and score > max_score:
+                max_score = score
+                found_menu = db_menu
+        return found_menu
+
+    def __search_mensa_by_alias(self, user_mensa):
+        found_mensi = []
+        for db_mensa, db_alias in self.db.selectMensaAlias():
+            if fuzz.token_set_ratio(db_alias, user_mensa) > 50 and db_mensa not in found_mensi:
+                found_mensi.append(db_mensa)
+        return found_mensi
+
+    def save_alert(self, chat_id: int, user_mensa: str, user_menu: str) -> str:
+        """saves the requested menu/mensa alert after checking that the alert was not already saved
+        and checks for matching menus that are already saved to prevent searching for same menus with slightly different
+        names.
+
+        :param chat_id:
+        :type chat_id: Integer
+        :param user_mensa:
+        :type user_mensa: String
+        :param user_menu:
+        :type user_menu: String
+
+        :return: Success/ Error Message
+        :rtype: String
+        """
+        user_language = self.db.get_user_language(chat_id)
+
+        found_mensi = self.__search_mensa_by_alias(user_mensa)
+        if len(found_mensi) > 0:
+            found_menu = self.__uniquify_menu(user_menu)
+            print("founde menu", found_menu)
+            for found_mensa in found_mensi:
+                if not found_menu:
+                    print("add new menu to database")
+                    # add new menu to database
+                    self.db.writeMenu(str(user_menu))
+                    # save alert under user given name
+                    self.db.write_alert(chat_id, found_mensa, user_menu)
+                    return '\n'.join(self.message_json["save_alert"]["new_menu_saved"][user_language]) % (user_menu, found_mensa)
+                else:
+                    if self.db.isAlertSaved(chat_id, found_mensa, found_menu):
+                        # same menu already saved for this user
+                        return '\n'.join(self.message_json["save_alert"]["menu_already_saved"][user_language])
+                    else:
+                        # save alert under user already know name
+                        self.db.write_alert(chat_id, found_mensa, found_menu)
+                        return '\n'.join(self.message_json["save_alert"]["similar_Menu"][user_language]) % (found_menu, found_mensa)
+        else:
+            # no matching mensa found
+            return '\n'.join(self.message_json["save_alert"]["no_mensa_found"][user_language])
+
+    def delete_alert(self, chat_id: int, user_mensa: str, user_menu: str) -> str:
+        """delete the requested menu/mensa alert after checking that the alert was already saved.
+
+        :param chat_id:
+        :type chat_id: Integer
+        :param user_mensa:
+        :type user_mensa: String
+        :param user_menu:
+        :type user_menu: String
+
+        :return: Success/ Error Message
+        :rtype: String
+        """
+        user_language = self.db.get_user_language(chat_id)
+
+
+        found_mensi = self.__search_mensa_by_alias(user_mensa)
+        if len(found_mensi) > 0:
+            found_menu = self.__uniquify_menu(user_menu)
+            if not found_menu:
+                return '\n'.join(self.message_json["delete_alert"]["no_menu_found"][user_language])
+            else:
+                for found_mensa in found_mensi:
+                    if self.db.isAlertSaved(chat_id, found_mensa, found_menu):
+                        # menu alert for user was saved -> delete
+                        self.db.delete_alert(chat_id, found_mensa, found_menu)
+                        return '\n'.join(self.message_json["delete_alert"]["deleted_alert"][user_language]) % (found_menu, found_mensa)
+
+                    else:
+                        return '\n'.join(self.message_json["delete_alert"]["no_saved_alert"][user_language])
+
+        else:
+            return '\n'.join(self.message_json["delete_alert"]["no_mensa_found"][user_language])
+
+    def get_mensa(self, chat_id):
+        user_language = self.db.get_user_language(chat_id)
+        sting_list = self.message_json["mensa_list"][user_language]
+        uni_list = self.db.get_universities()
+        for uni in uni_list:
+            sting_list = sting_list + [uni+"\n"]
+            sting_list = sting_list + self.db.get_mensa_by_uni(uni) + ["\n"]
+        return '\n'.join(sting_list)
+
+
+    def get_alert_overview(self, chat_id: int):
+        user_language = self.db.get_user_language(chat_id)
+        admin_id = self.config_json["admin_chat_id"]
+        if (chat_id == admin_id):
+            str = ""
+            for entry in self.db.countAlerts():
+                print(entry)
+
+                mensa, menu, sub_count = entry[0], entry[1], entry[2]
+                print(mensa, menu, sub_count)
+                str += '\n'.join(self.message_json["overview"][user_language]) % (menu, mensa, sub_count)
+            return str
+        else:
+            return '\n'.join(self.message_json["admin_only"][user_language])
+
+
+    def save_message(self, chat_id, message):
+        self.db.write_message(chat_id, message)
+        # forward to admin
+        admin_id = self.config_json["admin_chat_id"]
+        admin_language = self.db.get_user_language(admin_id)
+        self.sendMessage('\n'.join(self.message_json["user_sent_message"][admin_language]) % (chat_id, message), admin_id)
+
+    def change_language(self, chat_id, message):
+        user_language = self.db.get_user_language(chat_id)
+        if message in self.message_json["available_languages"]:
+            if self.db.get_user_language(chat_id) == message:
+                return '\n'.join(self.message_json["change_language"]["already_language"][user_language]) % message
+            else:
+                self.db.change_user_language(chat_id, message)
+                user_language = self.db.get_user_language(chat_id)
+                return '\n'.join(self.message_json["change_language"]["changed_language"][user_language]) % message
+        else:
+            return'\n'.join([self.message_json["change_language"]["no_valid_language"][user_language], self.message_json["available_languages"]])
+
+    def start_bot(self) -> None:
+        """ Booting up the Bot which listens for user interaction
+
+        :return: None
+        """
+        updater = Updater(self.config_json["token"])
         dispatcher = updater.dispatcher
 
         # Tell dispatcher which functions are to execute according to which user commands
@@ -86,6 +194,10 @@ class MenuAlertBot:
         dispatcher.add_handler(CommandHandler("hilfe", self.help))
         dispatcher.add_handler(CommandHandler("save", self.save))
         dispatcher.add_handler(CommandHandler("delete", self.delete))
+        dispatcher.add_handler(CommandHandler("mensa", self.mensa))
+        dispatcher.add_handler(CommandHandler("overview", self.overview))
+        dispatcher.add_handler(CommandHandler("language", self.language))
+
         dispatcher.add_handler(MessageHandler(Filters.command, self.unknown))
 
         # Handler that listens to user messages as text and reacts to it
@@ -101,150 +213,144 @@ class MenuAlertBot:
         print("Bot has booted up")
         updater.idle()
 
+
     # function that is executed when the user types /start
-    def start(self, bot, update):
+    def start(self, bot: telegram.bot.Bot, update) -> None:
+        """ When user starts interaction with the Bot.
+        Welcoming user and tell them how to use the Bot.
+        Also save the user to the list of users in the Database
+        And save "start" into the list of messages.
+
+
+        :param bot:
+        :param update:
+        :return:
+        """
+        # save user to list of users:
+        if not self.db.is_user_saved(int(update.message.chat_id)):
+            self.db.write_user(update.message.chat_id)
+
+        # save message, note it as "start"
+        self.save_message(update.message.chat_id, "start")
+
         # Sending some welcome messages and instructions about the bot usage
-        print(update.message.chat_id)
+        msg = self.message_json["welcome"][self.db.get_user_language(update.message.chat_id)]
         bot.send_message(
             chat_id=update.message.chat_id,
-            text='Willkommen beim Crispy Beef Alert. \n\n'
-                'Speichere deine Lieblingsmenus deiner Stamm-Mensa und bekomme eine Nachricht sobald dein '
-                'Wunschgericht wieder auf de Menu-Karte steht. \n\n'
-                'Um ein Menu zu speichern \nschreibe /save <Mensa>, <Menu> \n'
-                'Beispiel: /save Clausiusbar, Crispy Beef \n\n'
-                'Wenn du für ein Gericht keinen Alarm mehr bekommen möchtest \nschreibe /delete <Mensa>, <Menu>\n',
+            text='\n'.join(msg),
             parse_mode=telegram.ParseMode.MARKDOWN
         )
 
 
     # function that is executed when the user types /help
-    def help(self, bot, update):
+    def help(self, bot, update) -> None:
         # send back  help instructions
         bot.send_message(
             chat_id=update.message.chat_id,
             text='Um ein Menu zu speichern \nschreibe /save <Mensa>, <Menu> \n'
-                'Beispiel: /save Clausiusbar, Crispy Beef \n\n'
-                'Wenn du für ein Gericht keinen Alarm mehr bekommen möchtest, \nschreibe /delete <Mensa>, <Menu> \n'
-                'Beispiel: /delete Clausiusbar, Crispy Beef',
+                 'Beispiel: /save Clausiusbar, Crispy Beef \n\n'
+                 'Wenn du für ein Gericht keinen Alarm mehr bekommen möchtest, \nschreibe /delete <Mensa>, <Menu> \n'
+                 'Beispiel: /delete Clausiusbar, Crispy Beef',
             parse_mode=telegram.ParseMode.MARKDOWN
         )
 
-    def delete(self, bot, update):
+
+    def save(self, bot: telegram.bot.Bot, update: telegram.Update) -> None:
+        """Save a menu-mensa pair for which the communicating user wants to be notified.
+
+        :param bot:
+        :type bot: telegram.bot.Bot
+        :param update:
+        :type update: telegram.Update
+        :return: None
+        """
+
+        if not self.db.is_user_saved(update.message.chat_id):
+            msg = self.message_json["user_not_found"][self.db.get_user_language(update.message.chat_id)]
+        else:
+            # save message, note it as "start"
+            self.save_message(update.message.chat_id, update.message.text)
+
+            response = update.message.text
+            msg = self.save_alert(update.message.chat_id, response.split(',')[0], response.split(',')[1])
+        bot.send_message(
+            chat_id=update.message.chat_id,
+            text=msg,
+            parse_mode=telegram.ParseMode.MARKDOWN
+        )
+
+
+    def delete(self, bot: telegram.bot.Bot, update: telegram.Update) -> None:
         """
         Delete entry from subscription JSON
         :param bot: Bot
         :param update: Bot-Update (Message)
         :return: Nothing
         """
-        response = update.message.text
-        mensa, menu = 0, 0
-        # Check if command present
-        print("delete request")
-        # search for known mensa name
-        found = False
-        for key, value in self.MENSA_ALIAS.items():
-            for alias in value:
-                for word in response.split():
-                    print(alias)
-                    print(word)
-                    if fuzz.token_set_ratio(alias, word) > 50:
-                        mensa = self.MENSA[key]
-                        found = True
+        # save message, note it as "start"
+        self.save_message(update.message.chat_id, update.message.text)
 
-                        # search for menu name which should listed after a ","
-                        try:
-                            menu = response.split(',')[1]
-                            # local path concatenate with relative path of json
-                            my_path = os.path.abspath(os.path.dirname(__file__))
-                            newpath = os.path.join(my_path, self.JSONPATH)
-                            # read in json
-                            with open(newpath) as f:
-                                data = json.load(f)
-                            # check json for key of mensa, if not present create empty one
-                            if str(mensa) in data:
-                                # check json for menu for that mensa
-                                if menu in data[str(mensa)]:
-                                    # add chat id to that mensa-menu combination
-                                    list = data[str(mensa)][menu]
-                                    list.remove(update.message.chat_id)
-                                    data[str(mensa)][menu] = list
-                                # remove key if list is empty
-                                if len(data[str(mensa)][menu]) <= 0:
-                                    del data[str(mensa)][menu]
-                                    msg = "'"+str(menu)+"' gelöscht für '"+str(key)+"'."
-                                    sendMessage(msg, update.message.chat_id, self.TOKEN)
-                            data["lastUpdate"] = str(datetime.datetime.now())
-                            # save updated json
-                            with open(self.JSONPATH, 'w') as jsonFile:
-                                json.dump(data, jsonFile)
-                        except:
-                            if response.count(",") < 1:
-                                msg = "Bitte stelle sicher das du den Namen der Mensa und das Menu mit einem Komma (',') trennst."
-                                sendMessage(msg, update.message.chat_id, self.TOKEN)
-                            else:
-                                msg = "Leider ist etwas schief gelaufen, bitte überprüfe deine Eingabe. Schreibe /help für " \
-                                      "eine Anleitung zur korrekten Eingabe."
-                                sendMessage(msg, update.message.chat_id, self.TOKEN)
-        if not found:
-            msg = "Leider wurde keine passende Mensa in unserer Datenbank gefunden."
-            sendMessage(msg, update.message.chat_id, self.TOKEN)
+        if not self.db.is_user_saved(update.message.chat_id):
+            msg = self.message_json["user_not_found"][self.db.get_user_language(update.message.chat_id)]
+        else:
+            response = update.message.text
+            msg = self.delete_alert(update.message.chat_id, response.split(',')[0], response.split(',')[1])
+        bot.send_message(
+            chat_id=update.message.chat_id,
+            text=msg,
+            parse_mode=telegram.ParseMode.MARKDOWN
+        )
 
+    def mensa(self, bot: telegram.bot.Bot, update: telegram.Update) -> None:
+        """ Get list of all supported Mensa
 
-    def save(self, bot, update):
-        response = update.message.text
-        mensa, menu = 0, 0
-        # Check if command present
-        print("New save request")
-        # search for known mensa name
-        found = False
-        for key, value in self.MENSA_ALIAS.items():
-            for alias in value:
-                for word in response.split():
-                    print(alias)
-                    print(word)
-                    if fuzz.token_set_ratio(alias, word) > 50:
-                        print("FOUND")
-                        found = True
-                        mensa = self.MENSA[key]
-                        # search for menu name which should be between two "
-                        try:
-                            menu = response.split(',')[1]
-                            # local path concatenate with relative path of json
-                            my_path = os.path.abspath(os.path.dirname(__file__))
-                            newpath = os.path.join(my_path, self.JSONPATH)
-                            # read in json
-                            with open(newpath) as f:
-                                data = json.load(f)
+        :param bot: Bot
+        :param update: Bot-Update (Message)
+        :return: Nothing
+        """
+        # save message
+        self.save_message(update.message.chat_id, update.message.text)
 
-                            # check json for key of mensa, if not present create empty one
-                            if str(mensa) not in data:
-                                data[mensa] = {}
+        if not self.db.is_user_saved(update.message.chat_id):
+            msg = self.message_json["user_not_found"][self.db.get_user_language(update.message.chat_id)]
+        else:
+            msg = self.get_mensa(update.message.chat_id)
+        bot.send_message(
+            chat_id=update.message.chat_id,
+            text=msg,
+            parse_mode=telegram.ParseMode.MARKDOWN
+        )
 
-                            # check json for menu for that mensa, if not create empty list
-                            if menu not in data[str(mensa)]:
-                                data[str(mensa)][menu] = []
+    def language(self, bot: telegram.bot.Bot, update: telegram.Update) -> None:
+        """ Change language
 
-                            # add chat id to that mensa-menu combination if not present
-                            if update.message.chat_id not in data[str(mensa)][menu]:
-                                data[str(mensa)][menu].append(update.message.chat_id)
-                                msg = "'"+str(menu)+" ' gespeichert für '"+str(key)+"'."
-                                sendMessage(msg, update.message.chat_id, self.TOKEN)
-                            # update last edited key of json
-                            data["lastUpdate"] = str(datetime.datetime.now())
-                            # save updated json
-                            with open(self.JSONPATH, 'w') as jsonFile:
-                                json.dump(data, jsonFile)
-                        except:
-                            if response.count(",") < 1:
-                                msg = "Bitte stelle sicher das du den Namen der Mensa und das Menu mit einem Komme (',') trennst."
-                                sendMessage(msg, update.message.chat_id, self.TOKEN)
-                            else:
-                                msg = "Leider ist etwas schief gelaufen, bitte überprüfe deine Eingabe. Schreibe /help für " \
-                                      "eine Anleitung zur korrekten Eingabe."
-                                sendMessage(msg, update.message.chat_id, self.TOKEN)
-        if not found:
-            msg = "Leider wurde keine passende Mensa in unserer Datenbank gefunden."
-            sendMessage(msg, update.message.chat_id, self.TOKEN)
+        :param bot: Bot
+        :param update: Bot-Update (Message)
+        :return: Nothing
+        """
+        # save message
+        self.save_message(update.message.chat_id, update.message.text)
+
+        if not self.db.is_user_saved(update.message.chat_id):
+            msg = self.message_json["user_not_found"][self.db.get_user_language(update.message.chat_id)]
+        else:
+            msg = self.change_language(update.message.chat_id, update.message.text)
+        bot.send_message(
+            chat_id=update.message.chat_id,
+            text=msg,
+            parse_mode=telegram.ParseMode.MARKDOWN
+        )
+
+    def overview(self, bot: telegram.bot.Bot, update: telegram.Update) -> None:
+        # save message
+        self.save_message(update.message.chat_id, update.message.text)
+
+        msg = self.get_alert_overview(update.message.chat_id)
+        bot.send_message(
+            chat_id=update.message.chat_id,
+            text=msg,
+            parse_mode=telegram.ParseMode.MARKDOWN
+        )
 
     # function reads the users messages
     def listen(self, bot, update):
@@ -258,40 +364,31 @@ class MenuAlertBot:
         # Logg all errors as warnings as well as the current update to analyse it later on
         self.logger.warning('Update "%s" caused error "%s"', update, error)
 
+
     # Reacting to unknown commands via printing help
     def unknown(self, bot, update):
         self.help(bot, update)
 
-
-    #def sendMessage(self, msg, chat_id):
+        # def sendMessage(self, msg, chat_id):
         """
         Send a mensage to a telegram user specified on chatId
         chat_id must be a number!
         """
-        #bot = telegram.Bot(token=self.TOKEN)
-        #bot.sendMessage(chat_id=chat_id, text=msg, parse_mode=telegram.ParseMode.MARKDOWN)
-
-def sendMessage(msg, chat_id, token):
-    """
-    Send a mensage to a telegram user specified on chatId
-    chat_id must be a number!
-    """
-    bot = telegram.Bot(token=token)
-    bot.sendMessage(chat_id=chat_id, text=msg, parse_mode=telegram.ParseMode.MARKDOWN)
-
-"""
-
-"""
+        # bot = telegram.Bot(token=self.TOKEN)
+        # bot.sendMessage(chat_id=chat_id, text=msg, parse_mode=telegram.ParseMode.MARKDOWN)
 
 
+    def sendMessage(self, msg, chat_id):
+        """
+        Send a mensage to a telegram user specified on chatId
+        chat_id must be a number!
+        """
+        bot = telegram.Bot(token=self.config_json["token"])
+        bot.sendMessage(chat_id=chat_id, text=msg, parse_mode=telegram.ParseMode.MARKDOWN)
 
 
 
 if __name__ == '__main__':
-    AlertBot = MenuAlertBot()
-    AlertBot.setConfig("config.txt")
-    if AlertBot.validateConfig():
-        AlertBot.startBot()
-        print("Bot has booted up")
-    else:
-        print("ERROR: invalid Config")
+    AlertBot = MenuAlertBot("./config.json")
+    AlertBot.start_bot()
+    print("Bot has booted up")
