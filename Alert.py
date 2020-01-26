@@ -125,12 +125,12 @@ class MenuAlert:
 
         :return: dates for the days to scrape
         """
-        today = datetime.today()+timedelta(days=1)
+        today = datetime.today()
         if today.weekday() == 5:
             # if today is saturday
             return today + timedelta(days=2), [0, 1, 2, 3, 4]
         elif today.weekday() == 6:
-            # if today is saturday
+            # if today is sunday
             return today + timedelta(days=1), [0, 1, 2, 3, 4]
         else:
             return today, list(range(today.weekday(),today.weekday()+3))
