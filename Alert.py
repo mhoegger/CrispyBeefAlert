@@ -151,6 +151,7 @@ class MenuAlert:
                 status, menus_week = uni_scraper.scrape(date_to_scrape.date(), mensa_id)
                 print("status", status)
                 print("menus_week", menus_week)
+                print("days_to_alert", days_to_alert)
 
                 # end loop is scraping was not successful
                 if status != "success":
