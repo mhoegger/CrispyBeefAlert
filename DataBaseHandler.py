@@ -57,7 +57,6 @@ class DataBaseHandler:
         c = self.conn.cursor()
         c.execute('''SELECT mensa, alias FROM mensa_alias''')
         res = c.fetchall()
-        print(res)
         return res
 
     def countAlerts(self):
@@ -65,7 +64,6 @@ class DataBaseHandler:
         c.execute('''SELECT mensa, menu, sub_count FROM (
             SELECT mensa, menu, COUNT(DISTINCT user_id) AS sub_count FROM saved_alerts GROUP BY mensa, menu);'''),
         res = c.fetchall()
-        print(res)
         return res
 
     def write_user(self, chat_id):
@@ -82,7 +80,6 @@ class DataBaseHandler:
 
     def get_user_language(self, chat_id):
         c = self.conn.cursor()
-        print(chat_id)
         c.execute('''SELECT language FROM users
                     WHERE user_id = (?)''', (chat_id,))
         res = c.fetchall()[0][0]
@@ -98,22 +95,18 @@ class DataBaseHandler:
         c = self.conn.cursor()
         c.execute('''SELECT menu FROM available_menus''')
         res = c.fetchall()
-        print(res)
         list = []
         for entry in res:
             list.append(entry[0])
-        print(res)
         return list
 
     def get_universities(self):
         c = self.conn.cursor()
         c.execute('''SELECT DISTINCT university FROM available_mensa ''')
         res = c.fetchall()
-        print(res)
         list = []
         for entry in res:
             list.append(entry[0])
-        print(res)
         return list
 
 
@@ -125,7 +118,6 @@ class DataBaseHandler:
         list = []
         for entry in res:
             list.append(entry[0])
-        print(res)
         return list
 
     def get_mensainfo_by_uni(self, uni) -> list:
@@ -136,7 +128,6 @@ class DataBaseHandler:
         list = []
         for entry in res:
             list.append(entry)
-        print(res)
         return list
 
     def get_useralert_by_mensa_and_menu(self, mensa, menu) -> list:
@@ -147,7 +138,6 @@ class DataBaseHandler:
         list = []
         for entry in res:
             list.append(entry[0])
-        print(res)
         return list
 
     def get_mensa_by_online_id(self, online) -> str:
