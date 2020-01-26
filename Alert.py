@@ -58,6 +58,7 @@ class MenuAlert:
             token_set_ratio = fuzz.token_set_ratio(menu_normalized, alert_menu_space)
             if token_set_ratio > max_token_set_ratio:
                 max_token_set_ratio = token_set_ratio
+        print("Compare", alert_menu, menu, max_token_set_ratio)
         # is the correlation is over 96% then raise an alert
         if max_token_set_ratio > 95:
             # get all users which have an alert for this menu.

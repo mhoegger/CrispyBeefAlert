@@ -75,10 +75,8 @@ class ETHMenu(Menu):
                 columns = day_menu.find_all("td")
                 #print("columns", columns)
                 for k, men in enumerate(columns[1:number_of_menus+1]):  # skip first one because it tells the weekday
-                    print("men", men, "\n")
                     menu_names[day].append((re.search(r'<td>(.*?)</td>', str(men).replace("<h3>", "**").
                                            replace("</h3>", "** ")).group(1)).replace("<br/>", " "))
-            print(menu_names[0:5])
             return "success", menu_names[0:5]
 
         except RuntimeError as e:
