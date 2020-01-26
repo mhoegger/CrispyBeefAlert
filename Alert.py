@@ -152,6 +152,7 @@ class MenuAlert:
                 print("status", status)
                 print("menus_week", menus_week)
                 print("days_to_alert", days_to_alert)
+                print("date_to_scrape", date_to_scrape)
 
                 # end loop is scraping was not successful
                 if status != "success":
